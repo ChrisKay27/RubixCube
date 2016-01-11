@@ -3,6 +3,7 @@ package ui;
 import cube.Face;
 import cube.RubixCube;
 import cube.RubixCube.Faces;
+import searches.AStar;
 import searches.BreadthFirstSearch;
 import searches.Searchable;
 import searches.Searchable.EdgeChildPair;
@@ -29,7 +30,6 @@ public class Display {
 
 	public static void main(String[] args) {
 		cube = new RubixCube(cubeSize);
-
 
 		JFrame window = new JFrame("Rubix");
 
@@ -172,7 +172,8 @@ public class Display {
 
 		JButton solve = new JButton("Solve!");
 		solve.addActionListener(e -> {
-			BreadthFirstSearch bfs = new BreadthFirstSearch();
+			//BreadthFirstSearch search = new BreadthFirstSearch();
+			AStar search = new AStar();
 
 			RubixCube goal = new RubixCube(cubeSize);
 			solve.setEnabled(false);
@@ -183,7 +184,7 @@ public class Display {
 					ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
 					System.out.println("Searching for goal!");
-					List<EdgeChildPair> result = bfs.findGoal(cube, goal);
+					List<EdgeChildPair> result = search.findGoal(cube, goal);
                     result.remove(0);
 
                     writeResultsToFile(cubeSize,result);
