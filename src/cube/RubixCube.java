@@ -1,9 +1,11 @@
 package cube;
 
+import com.google.common.primitives.Bytes;
+import com.sun.deploy.util.ArrayUtil;
+import cube.Face.Color;
 import searches.Searchable;
 
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,7 +97,7 @@ public class RubixCube implements Searchable {
 				else
 					nCube.getFace(Faces.RIGHT).rotateCW();
 
-			Color[] topcol = top.getCol(col);
+			byte[] topcol = top.getCol(col);
 			top.setCol(col, back.getCol(col));
 			back.setCol(col, bottom.getCol(col));
 			bottom.setCol(col, front.getCol(col));
@@ -111,7 +113,7 @@ public class RubixCube implements Searchable {
 		if( size%2 == 1 && col == size/2 ){
 			for (int i = 0; i < size; i++) {
 				if( i != col )
-					rotateNS(i,!cw);
+					rotateEW(i,!cw);
 			}
 			return nCube;
 		}
@@ -138,7 +140,7 @@ public class RubixCube implements Searchable {
 					nCube.getFace(Faces.FRONT).rotateCCW();
 
 
-			Color[] topRow = top.getRow(col);
+			byte[] topRow = top.getRow(col);
 			top.setRow(col, reverse(left.getCol(col)));
 			left.setCol(col, bottom.getRow(size-col-1));
 			bottom.setRow(size-col-1, reverse(right.getCol(size-col-1)));
@@ -181,7 +183,7 @@ public class RubixCube implements Searchable {
 					nCube.getFace(Faces.BOTTOM).rotateCW();
 
 
-			Color[] frontrow = front.getRow(row);
+			byte[] frontrow = front.getRow(row);
 			front.setRow(row, right.getRow(row));
 			right.setRow(row, reverse(back.getRow(size-row-1)));
 			back.setRow(size-row-1, reverse(left.getRow(row)));
@@ -190,80 +192,14 @@ public class RubixCube implements Searchable {
 		return nCube;
 	}
 
-//	public void rotateFace(Faces face, boolean cw){
-//		int rotations = 1;
-//		if( !cw )
-//			rotations = 3;
-//
-//		Face front = getFace(FRONT);
-//		Face right = getFace(RIGHT);
-//		Face back = getFace(BACK);
-//		Face left = getFace(LEFT);
-//		Face top = getFace(TOP);
-//		Face bottom = getFace(BOTTOM);
-//
-//		while(rotations --> 0 ) {
-//			getFace(face).rotateCW();
-//			switch (face) {
-//				case FRONT: {
-//					Color[] toprow = top.getRow(2);
-//					top.setRow(2, reverse(left.getCol(2)));
-//
-//					left.setCol(2, bottom.getRow(0));
-//					bottom.setRow(0, reverse(right.getCol(0)));
-//					right.setCol(0, toprow);
-//					break;
-//				}
-//				case RIGHT: {
-//					Color[] topcol = top.getCol(2);
-//					top.setCol(2, front.getCol(2));
-//					front.setCol(2, bottom.getCol(2));
-//					bottom.setCol(2, reverse(back.getCol(2)));
-//					back.setCol(2, topcol);
-//					break;
-//				}
-//				case BACK: {
-//					Color[] toprow = top.getRow(0);
-//					top.setRow(0, right.getCol(2));
-//					right.setCol(2, reverse(bottom.getRow(2)));
-//					bottom.setRow(2, left.getCol(0));
-//					left.setCol(0, reverse(toprow));
-//					break;
-//				}
-//				case LEFT: {
-//					Color[] topcol = top.getCol(0);
-//					top.setCol(0, back.getCol(0));
-//					back.setCol(0, bottom.getCol(0));
-//					bottom.setCol(0, front.getCol(0));
-//					front.setCol(0, topcol);
-//					break;
-//				}
-//				case TOP:{
-//					Color[] frontrow = front.getRow(0);
-//					front.setRow(0, right.getRow(0));
-//					right.setRow(0, reverse(back.getRow(2)));
-//					back.setRow(2, reverse(left.getRow(0)));
-//					left.setRow(0, frontrow);
-//					break;
-//				}
-//				case BOTTOM: {
-//					Color[] frontrow = front.getRow(2);
-//					front.setRow(2, left.getRow(2));
-//					left.setRow(2, reverse(back.getRow(0)));
-//					back.setRow(0, reverse(right.getRow(2)));
-//					right.setRow(2, frontrow);
-//					break;
-//				}
-//			}
-//		}
-//
-//
-//	}
-
-	private Color[] reverse(Color[] colors) {
-		List<Color> colorList = Arrays.asList(colors);
-		Collections.reverse(colorList);
-		return colorList.toArray(colors);
+	/**
+	 * @return A new byte[] object
+     */
+	private static byte[] reverse(byte[] colors) {
+		List<Byte> bytes = Bytes.asList(colors);
+		Collections.reverse(bytes);
+		colors = Bytes.toArray(bytes);
+		return colors;
 	}
 
 
@@ -300,6 +236,9 @@ public class RubixCube implements Searchable {
 		long distance=0;
 		for (int i = 0; i < 6; i++)
 			distance += faces[i].distanceFrom(cube.faces[i]);
+
+
+
 		return distance;
 	}
 
@@ -338,4 +277,57 @@ public class RubixCube implements Searchable {
 		sb.append(f).append("]");
 		return sb.toString();
 	}
+
+
+
+
+	public static class RubixCubeTester{
+
+		public static boolean test() {
+			boolean passed;
+			passed = testEquals();
+			return passed;
+		}
+
+
+		public static boolean testEquals() {
+
+			for (int size = 2; size < 10; size++) {
+				RubixCube rc = new RubixCube(size);
+				RubixCube rc2 = new RubixCube(size);
+
+				boolean passed;
+
+				for (int randomMoves = 0; randomMoves < 1000; randomMoves++) {
+					boolean cw = Math.random() < 0.5;
+					int colOrRow = (int)(Math.random()*size);
+					int choice = (int)(Math.random()*3);
+					switch(choice){
+						case 0:
+							passed = rc.rotateNS(colOrRow,cw).equals(rc2.rotateNS(colOrRow,cw));
+							if( !passed )
+								return false;
+							break;
+						case 1:
+							passed = rc.rotateEW(colOrRow,cw).equals(rc2.rotateEW(colOrRow,cw));
+							if( !passed )
+								return false;
+							break;
+						case 2:
+							passed = rc.rotateRow(colOrRow,cw).equals(rc2.rotateRow(colOrRow,cw));
+							if( !passed )
+								return false;
+							break;
+					}
+				}
+			}
+
+			return true;
+		}
+
+
+
+
+	}
+
 }

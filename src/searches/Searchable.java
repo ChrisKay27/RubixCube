@@ -18,6 +18,11 @@ public interface Searchable {
             this.edge = edge;
             this.child = child;
         }
+
+        @Override
+        public String toString() {
+            return '(' + (child!=null?child.toString():null) + ',' + (edge!=null?edge.toString():null) + ')';
+        }
     }
 
     long distanceFrom(Searchable s);

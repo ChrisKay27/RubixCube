@@ -1,51 +1,67 @@
 package cube;
 
-import java.awt.*;
-import java.util.Arrays;
 
 /**
  * Created by chris_000 on 1/5/2016.
  */
 public class Face {
 
+	public static class Color{
+		public static final byte RED = 0;
+		public static final byte BLUE = 1;
+		public static final byte GREEN = 2;
+		public static final byte WHITE = 3;
+		public static final byte YELLOW = 4;
+		public static final byte ORANGE = 5;
+	}
 
 	//public enum Color {RED,BLUE,GREEN,WHITE,YELLOW,ORANGE}
-	private Color[][] colors;
+	private byte[][] colors;
+	private final byte color;
 
-
-	public Face(int size, Color color){
-		colors = new Color[size][size];
+	public Face(int size, byte color){
+		this.color = color;
+		colors = new byte[size][size];
 		for (int i = 0; i < colors.length; i++)
 			for (int j = 0; j < colors[0].length; j++)
 				colors[i][j] = color;
+
 	}
 
 	public Face(Face face) {
-		colors = new Color[face.getSize()][face.getSize()];
+		this.color = face.color;
+		colors = new byte[face.getSize()][face.getSize()];
 		for (int i = 0; i < colors.length; i++)
 			for (int j = 0; j < colors[0].length; j++)
 				colors[i][j] = face.colors[i][j];
 	}
 
 
-	public Color[] getCol(int col) {
-		Color[] newcolors = new Color[this.colors.length];
+	public byte[] getCol(int col) {
+		byte[] newcolors = new byte[this.colors.length];
 		System.arraycopy(colors[col], 0, newcolors, 0, colors.length);
 		return newcolors;
 	}
-	public Color[] getRow(int row) {
-		Color[] Row = new Color[colors.length];
+
+	/**
+	 * @return A new array with the same elements as this faces row indexed by the param 'row'
+     */
+	public byte[] getRow(int row) {
+		byte[] Row = new byte[colors.length];
 		for (int i = 0; i < colors.length; i++) {
 			Row[i] = colors[i][row];
 		}
 		return Row;
 	}
 
-	public void setCol(int col, Color[] Col){
+	public void setCol(int col, byte[] Col){
 		System.arraycopy(Col, 0, colors[col], 0, colors.length);
 	}
 
-	public void setRow(int row, Color[] Row){
+	/**
+	 * @param Row Copies the elements from Row into this faces row.
+     */
+	public void setRow(int row, byte[] Row){
 
 		//System.out.println("Set row " +row+" to:"+ Arrays.asList(Row));
 
@@ -53,8 +69,9 @@ public class Face {
 			colors[i][row] = Row[i];
 	}
 
+
 	public void rotateCW(){
-		Color[][] newFace = new Color[colors.length][colors.length];
+		byte[][] newFace = new byte[colors.length][colors.length];
 
 		for (int i = 0; i < colors.length; ++i) {
 			for (int j = 0; j < colors.length; ++j) {
@@ -85,20 +102,20 @@ public class Face {
 	}
 
 
-	@Override
-	public int hashCode() {
-		int hashcode = 0b10101010101010101011010101010101;
-
-		for (int i = 0; i < colors.length; ++i)
-			for (int j = 0; j < colors.length; ++j) {
-				if( i%2 == 1 )
-					hashcode |= colors[i][j].hashCode() << i*j;
-				else
-					hashcode &= colors[i][j].hashCode() << i*j;
-			}
-		//System.out.println("face:"+hashcode);
-		return hashcode;
-	}
+//	@Override
+//	public int hashCode() {
+//		int hashcode = 0b10101010101010101011010101010101;
+//
+//		for (int i = 0; i < colors.length; ++i)
+//			for (int j = 0; j < colors.length; ++j) {
+//				if( i%2 == 1 )
+//					hashcode |= colors[i][j].hashCode() << i*j;
+//				else
+//					hashcode &= colors[i][j].hashCode() << i*j;
+//			}
+//		//System.out.println("face:"+hashcode);
+//		return hashcode;
+//	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -118,7 +135,7 @@ public class Face {
 	}
 
 	public boolean isSolid() {
-		Color c = colors[0][0];
+		byte c = colors[0][0];
 		for (int i = 0; i < colors.length; ++i)
 			for (int j = 0; j < colors.length; ++j)
 				if( colors[i][j] != c)
@@ -156,12 +173,32 @@ public class Face {
 
 		for (int i = 0; i < getSize(); i++) {
 			for (int j = 0; j < getSize(); j++) {
-				if( colors[i][j] != face.colors[i][j] )
+				if( colors[i][j] != face.colors[i][j] ) {
+					if( !isAdjacent(colors[i][j]) )
+						distance++;
 					distance++;
+				}
 			}
 		}
 
 		return distance;
+	}
+
+
+	private boolean isAdjacent(byte c){
+		if( color == Color.RED )
+			return c != Color.GREEN;
+		if( color == Color.WHITE )
+			return c != Color.YELLOW;
+		if( color == Color.BLUE )
+			return c != Color.ORANGE;
+		if( color == Color.GREEN )
+			return c != Color.RED;
+		if( color == Color.ORANGE )
+			return c != Color.BLUE;
+		if( color == Color.YELLOW )
+			return c != Color.WHITE;
+		return false;
 	}
 }
 
