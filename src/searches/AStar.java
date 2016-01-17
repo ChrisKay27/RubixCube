@@ -7,14 +7,24 @@ import java.util.function.Consumer;
 
 /**
  * Created by chris_000 on 1/5/2016.
+ * Initial Memory ~ 33MB
+ *
+ * HashSet - 560000 rubes ~ 1GB, 970MB of cubes/560000 cubes = 1.7KB per cube
+ * ArrayList - 56000 rubes ~ 300MB, 270MB/56000 cubes = 4.8KB per cube
+ * HashMap - 560000 rubes ~ 1GB, 970MB of cubes/560000 cubes = 1.7KB per cube
+ *
  */
 public class AStar implements Search {
 
 	private final Consumer<Searchable> pathTracer;
 	private boolean stopFlag;
 
+//    private List<Searchable> closedSet;
+//    private List<Searchable> openSet;
     private Set<Searchable> closedSet;
     private Set<Searchable> openSet;
+//    private HashMap<Searchable,Integer> closedSet;
+//    private HashMap<Searchable,Integer>  openSet;
 
 
     private boolean currentlyExploring = false;
@@ -32,10 +42,14 @@ public class AStar implements Search {
 
         closedSet = new HashSet<>();
         openSet = new HashSet<>();
+//        closedSet = new HashMap<>();
+//        openSet = new HashMap<>();
+//        closedSet = new ArrayList<>();
+//        openSet = new ArrayList<>();
 
 		Map<EdgeChildPair, EdgeChildPair> cameFrom = new HashMap<>();
 
-		Map<Searchable,Long> fScore = new HashMap<>();
+		Map<Searchable,Integer> fScore = new HashMap<>();
 		fScore.put(start,start.distanceFrom(targetState));
 
 		Comparator<EdgeChildPair> c = (o1, o2) -> {
@@ -46,11 +60,11 @@ public class AStar implements Search {
             return 0;
         };
 		PriorityQueue<EdgeChildPair> priorityQueue = new PriorityQueue<>(c);
-		openSet.add(start);
+        openSet.add(start); //openSet.put(start,0);//
 		priorityQueue.add(new EdgeChildPair(null,start));
 
-		Map<Searchable,Long> gScore = new HashMap<>();
-		gScore.put(start,0L);
+		Map<Searchable,Integer> gScore = new HashMap<>();
+		gScore.put(start,0);
 
 
 		//System.out.println("start.distanceFrom(targetState)=" + start.distanceFrom(targetState));
@@ -69,25 +83,27 @@ public class AStar implements Search {
 
 			long distanceFromGoal = current.distanceFrom(targetState);
 			if ( distanceFromGoal == 0){
-				System.out.println("Goal state found!: "+current);
-				return reconstruct_path(cameFrom, ecp);
+				if( current.equals(targetState)) {
+					System.out.println("Goal state found!: " + current);
+					return reconstruct_path(cameFrom, ecp);
+				}
 			}
 			else {
                 //System.out.println(distanceFromGoal);
             }
 			openSet.remove(current);
-			closedSet.add(current);
+            closedSet.add(current); //closedSet.put(current,0);//
 
 			List<EdgeChildPair> children = current.getChildren();
 			//System.out.println("Adding " + children.size() + " children states.");c
 			for (EdgeChildPair neighbor : children ){
-				if( closedSet.contains(neighbor.child) )
+				if( closedSet.contains(neighbor.child) ) //closedSet.containsKey(neighbor.child) ) //
 					continue;
 
-				long tentative_g_score = gScore.get(current) + 1;
+				int tentative_g_score = gScore.get(current) + 1;
 
-				if( !openSet.contains(neighbor.child) ) {
-					openSet.add(neighbor.child);
+				if( !openSet.contains(neighbor.child) ) {//!openSet.containsKey(neighbor.child) ) { //
+					openSet.add(neighbor.child); //openSet.put(neighbor.child,0); //
 					gScore.put(neighbor.child, tentative_g_score);
 					fScore.put(neighbor.child, tentative_g_score + neighbor.child.distanceFrom(targetState));
 					priorityQueue.add(neighbor);

@@ -1,4 +1,0 @@
-([Cube;Front:[W,W,W,R,O,R,W,W,W],Right:[O,O,O,G,G,G,O,O,O],Back:[Y,Y,Y,G,B,G,Y,Y,Y],Left:[B,B,B,R,R,R,B,B,B],Top:[G,B,G,W,W,W,G,B,G],Bottom:[R,O,R,Y,Y,Y,R,O,R]],null)
-([Cube;Front:[W,W,W,R,O,R,W,W,W],Right:[O,O,O,G,G,G,O,O,O],Back:[Y,Y,Y,G,B,G,Y,Y,Y],Left:[B,B,B,R,R,R,B,B,B],Top:[G,B,G,W,W,W,G,B,G],Bottom:[R,O,R,Y,Y,Y,R,O,R]],NS:1:cw)
-([Cube;Front:[R,O,R,R,O,R,R,O,R],Right:[O,G,O,O,G,O,O,G,O],Back:[G,B,G,G,B,G,G,B,G],Left:[B,R,B,B,R,B,B,R,B],Top:[W,W,W,W,W,W,W,W,W],Bottom:[Y,Y,Y,Y,Y,Y,Y,Y,Y]],Row:1:ccw)
-([Cube;Front:[O,O,O,O,O,O,O,O,O],Right:[G,G,G,G,G,G,G,G,G],Back:[B,B,B,B,B,B,B,B,B],Left:[R,R,R,R,R,R,R,R,R],Top:[W,W,W,W,W,W,W,W,W],Bottom:[Y,Y,Y,Y,Y,Y,Y,Y,Y]],null)

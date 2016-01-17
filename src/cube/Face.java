@@ -6,16 +6,8 @@ package cube;
  */
 public class Face {
 
-	public static class Color{
-		public static final byte RED = 0;
-		public static final byte BLUE = 1;
-		public static final byte GREEN = 2;
-		public static final byte WHITE = 3;
-		public static final byte YELLOW = 4;
-		public static final byte ORANGE = 5;
-	}
 
-	//public enum Color {RED,BLUE,GREEN,WHITE,YELLOW,ORANGE}
+
 	private byte[][] colors;
 	private final byte color;
 
@@ -144,61 +136,61 @@ public class Face {
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (int i = 0; i < colors.length; ++i)
-			for (int j = 0; j < colors.length; ++j)
-				if( colors[i][j] == Color.RED )
-					sb.append("R,");
-				else if( colors[i][j] == Color.BLUE )
-					sb.append("B,");
-				else if( colors[i][j] == Color.YELLOW )
-					sb.append("Y,");
-				else if( colors[i][j] == Color.WHITE )
-					sb.append("W,");
-				else if( colors[i][j] == Color.GREEN )
-					sb.append("G,");
-				else if( colors[i][j] == Color.ORANGE )
-					sb.append("O,");
-
-		String s = sb.substring(0,sb.length()-1);
-		return s + "]";
-	}
-
-
-	public long distanceFrom(Face face) {
-		long distance=0;
-
-		for (int i = 0; i < getSize(); i++) {
-			for (int j = 0; j < getSize(); j++) {
-				if( colors[i][j] != face.colors[i][j] ) {
-					if( !isAdjacent(colors[i][j]) )
-						distance++;
-					distance++;
-				}
-			}
-		}
-
-		return distance;
-	}
+//	@Override
+//	public String toString() {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("[");
+//		for (int i = 0; i < colors.length; ++i)
+//			for (int j = 0; j < colors.length; ++j)
+//				if( colors[i][j] == Color.RED )
+//					sb.append("R,");
+//				else if( colors[i][j] == Color.BLUE )
+//					sb.append("B,");
+//				else if( colors[i][j] == Color.YELLOW )
+//					sb.append("Y,");
+//				else if( colors[i][j] == Color.WHITE )
+//					sb.append("W,");
+//				else if( colors[i][j] == Color.GREEN )
+//					sb.append("G,");
+//				else if( colors[i][j] == Color.ORANGE )
+//					sb.append("O,");
+//
+//		String s = sb.substring(0,sb.length()-1);
+//		return s + "]";
+//	}
 
 
-	private boolean isAdjacent(byte c){
-		if( color == Color.RED )
-			return c != Color.GREEN;
-		if( color == Color.WHITE )
-			return c != Color.YELLOW;
-		if( color == Color.BLUE )
-			return c != Color.ORANGE;
-		if( color == Color.GREEN )
-			return c != Color.RED;
-		if( color == Color.ORANGE )
-			return c != Color.BLUE;
-		if( color == Color.YELLOW )
-			return c != Color.WHITE;
-		return false;
-	}
+//	public long distanceFrom(Face face) {
+//		long distance=0;
+//
+//		for (int i = 0; i < getSize(); i++) {
+//			for (int j = 0; j < getSize(); j++) {
+//				if( colors[i][j] != face.colors[i][j] ) {
+//					if( !isAdjacent(colors[i][j]) )
+//						distance++;
+//					distance++;
+//				}
+//			}
+//		}
+//
+//		return distance;
+//	}
+
+//
+//	private boolean isAdjacent(byte c){
+//		if( color == Color.RED )
+//			return c != Color.GREEN;
+//		if( color == Color.WHITE )
+//			return c != Color.YELLOW;
+//		if( color == Color.BLUE )
+//			return c != Color.ORANGE;
+//		if( color == Color.GREEN )
+//			return c != Color.RED;
+//		if( color == Color.ORANGE )
+//			return c != Color.BLUE;
+//		if( color == Color.YELLOW )
+//			return c != Color.WHITE;
+//		return false;
+//	}
 }
 

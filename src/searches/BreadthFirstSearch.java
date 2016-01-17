@@ -1,20 +1,34 @@
 package searches;
 
 
+
+import org.jetbrains.annotations.NotNull;
 import searches.Searchable.EdgeChildPair;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Created by chris_000 on 1/5/2016.
  */
 public class BreadthFirstSearch implements Search{
 
+
+    private final Consumer<Searchable> pathTracer;
+    private boolean stopFlag;
+    private Queue<EdgeChildPair> queue;
+    private Map<Searchable, Pair>  distancesAndParent;
+
+
+    public BreadthFirstSearch(@NotNull Consumer<Searchable> c) {
+        pathTracer = c;
+    }
+
     @Override
     public List<EdgeChildPair> findGoal(Searchable s, Searchable targetState) {
-        Map<Searchable, Pair> distancesAndParent = new HashMap<>(1000000);
+        distancesAndParent = new HashMap<>(1000000);
 
-        Queue<EdgeChildPair> queue = new LinkedList<>();
+        queue = new LinkedList<>();
         queue.add(new EdgeChildPair(null,s));
         distancesAndParent.put(s,new Pair(0,null));
 
@@ -29,7 +43,7 @@ public class BreadthFirstSearch implements Search{
             displayTimes--;
             if( displayTimes == 0 ) {
                 cycletime = System.currentTimeMillis() - cycletime;
-                System.out.println("CycleTime:" + cycletime + "ms");
+                //System.out.println("CycleTime:" + cycletime + "ms");
             }
             cycletime = System.currentTimeMillis();
 
@@ -37,12 +51,13 @@ public class BreadthFirstSearch implements Search{
             // dt = System.currentTimeMillis() - t;
             //System.out.println("Took " + dt + "ms to check poll the queue, queue size=" + queue.size());
 
+            pathTracer.accept(state.child);
 
             lookedAtStatesCounter++;
             if(lookedAtStatesCounter%10000==0) {
                 dt = System.currentTimeMillis() - lastTime;
                 lastTime = System.currentTimeMillis();
-                System.out.println("Looked at " + lookedAtStatesCounter + " States. Took " + dt + "ms since last check. States in HashMap:" + distancesAndParent.size());
+                //System.out.println("Looked at " + lookedAtStatesCounter + " States. Took " + dt + "ms since last check. States in HashMap:" + distancesAndParent.size());
             }
             if(state.child.isGoal()){
                 System.out.println("Goal Found!");
@@ -77,8 +92,8 @@ public class BreadthFirstSearch implements Search{
 //                    if( displayTimes == 0)
 //                        System.out.println("Took " + dt + "ms to check distancesAndParent.containsKey(child.child) (not found");
                     newStateCounter++;
-                    if(newStateCounter%100==0)
-                        System.out.println("Hit " + newStateCounter + " States.");
+                   // if(newStateCounter%100==0)
+                   //     System.out.println("Hit " + newStateCounter + " States.");
 
                     Pair info = new Pair(Integer.MAX_VALUE, null);
                     distancesAndParent.put(child.child, info );
@@ -94,8 +109,8 @@ public class BreadthFirstSearch implements Search{
 //                    if( displayTimes == 0)
 //                        System.out.println("Took " + dt + "ms to check distancesAndParent.containsKey(child.child) (found)");
                     sameStateCounter++;
-                    if(sameStateCounter%100==0)
-                        System.out.println("Hit the same state " + sameStateCounter + " times.");
+                   //if(sameStateCounter%100==0)
+                   //     System.out.println("Hit the same state " + sameStateCounter + " times.");
                     //System.out.println("Arrived at the same state, ignoring: " + child.child.hashCode());
 //                    Pair info = distancesAndParent.get(child.child);
 //                    if (info.distance == Integer.MAX_VALUE){
@@ -115,6 +130,26 @@ public class BreadthFirstSearch implements Search{
     @Override
     public List<SearchResult> findGoals(List<Searchable> ss, Searchable targetState) {
         return null;
+    }
+
+    @Override
+    public void stop() {
+        stopFlag = true;
+    }
+
+    @Override
+    public SearchDiagnostic getSearchDiagnostic() {
+        return new SearchDiagnostic() {
+            @Override
+            public long getStatesExplored() {
+                return distancesAndParent.size();
+            }
+
+            @Override
+            public long getKnownUnexploredStates() {
+                return queue.size();
+            }
+        };
     }
 
 

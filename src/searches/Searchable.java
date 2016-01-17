@@ -25,6 +25,6 @@ public interface Searchable {
         }
     }
 
-    long distanceFrom(Searchable s);
+    int distanceFrom(Searchable s);
 
 }
