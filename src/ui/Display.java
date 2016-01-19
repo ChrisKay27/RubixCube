@@ -130,7 +130,8 @@ public class Display {
         rotateEW.addActionListener(e -> {
             int column = (Integer)col.getSelectedItem();
             if( column != -1){
-                cubePanel.setCube(cubePanel.getCube().rotateEW(column,"CW".equals(dir.getSelectedItem())));
+                boolean cw = "CW".equals(dir.getSelectedItem());
+                cubePanel.setCube(cubePanel.getCube().rotateEW(column,cw));
                 layout.repaint();
             }
         });
@@ -179,7 +180,7 @@ public class Display {
         JButton runExpButton = new JButton("Run Experiment!");
         runExpButton.addActionListener(e -> {
 
-            runExperiment(new ExperimentParameters(Search.Searches.ASTAR,cubeSize, 1000000, 4 ));
+            runExperiment(new ExperimentParameters(Search.Searches.ASTAR,cubeSize, 1000000, 5 ));
 
             runExpButton.setEnabled(false);
             stop.setEnabled(true);

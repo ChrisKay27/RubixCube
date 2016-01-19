@@ -33,34 +33,45 @@ public class CubeDisplayPanel extends JPanel {
         int xOffs = 0, yOffs = offsY;
 
         {
-            byte[][] left = new byte[cubeSize][];
-            System.arraycopy(cube.getFace(RubixCube.Faces.LEFT), 0, left, 0, cubeSize);
-            RubixCube.rotateCCW(left);
+            byte[][] left = new byte[cubeSize][cubeSize];
+            byte[][] face = cube.getFace(RubixCube.Faces.LEFT);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, left[i], 0, cubeSize);
+//            System.arraycopy(cube.getFace(RubixCube.Faces.LEFT), 0, left, 0, cubeSize);
+            RubixCube.rotateCW(left);
             drawFace(g, xOffs, yOffs, dx, dy, left);
         }
 
         {
             xOffs = offsX;
             yOffs = 0;
-            byte[][] back = new byte[cubeSize][];
-            System.arraycopy(cube.getFace(RubixCube.Faces.BACK), 0, back, 0, cubeSize);
+            byte[][] back = new byte[cubeSize][cubeSize];
+            byte[][] face = cube.getFace(RubixCube.Faces.BACK);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, back[i], 0, cubeSize);
+            //System.arraycopy(cube.getFace(RubixCube.Faces.BACK), 0, back, 0, cubeSize);
             drawFace(g, xOffs, yOffs, dx, dy, back);
         }
 
         {
             xOffs = offsX;
             yOffs = offsY;
-            byte[][] top = new byte[cubeSize][];
-            System.arraycopy(cube.getFace(RubixCube.Faces.TOP), 0, top, 0, cubeSize);
+            byte[][] top = new byte[cubeSize][cubeSize];
+            byte[][] face = cube.getFace(RubixCube.Faces.TOP);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, top[i], 0, cubeSize);
             drawFace(g, xOffs, yOffs, dx, dy, top);
         }
 
         {
             xOffs = 2 * offsX;
             yOffs = offsY;
-            byte[][] right = new byte[cubeSize][];
-            System.arraycopy(cube.getFace(RubixCube.Faces.RIGHT), 0, right, 0, cubeSize);
-            RubixCube.rotateCW(right);
+            byte[][] right = new byte[cubeSize][cubeSize];
+            byte[][] face = cube.getFace(RubixCube.Faces.RIGHT);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, right[i], 0, cubeSize);
+//            System.arraycopy(cube.getFace(RubixCube.Faces.RIGHT), 0, right, 0, cubeSize);
+            RubixCube.rotateCCW(right);
             drawFace(g, xOffs, yOffs, dx, dy, right);
         }
 
@@ -68,15 +79,21 @@ public class CubeDisplayPanel extends JPanel {
             xOffs = offsX;
             yOffs = offsY * 2;
             byte[][] front = new byte[cubeSize][cubeSize];
-            System.arraycopy(cube.getFace(RubixCube.Faces.FRONT), 0, front, 0, cubeSize);
+            byte[][] face = cube.getFace(RubixCube.Faces.FRONT);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, front[i], 0, cubeSize);
+//            System.arraycopy(cube.getFace(RubixCube.Faces.FRONT), 0, front, 0, cubeSize);
             drawFace(g, xOffs, yOffs, dx, dy, front);
         }
 
         {
             xOffs = offsX;
             yOffs = offsY * 3;
-            byte[][] bottom = new byte[cubeSize][];
-            System.arraycopy(cube.getFace(RubixCube.Faces.BOTTOM), 0, bottom, 0, cubeSize);
+            byte[][] bottom = new byte[cubeSize][cubeSize];
+            byte[][] face = cube.getFace(RubixCube.Faces.BOTTOM);
+            for (int i = 0; i < face.length; i++)
+                System.arraycopy(face[i], 0, bottom[i], 0, cubeSize);
+//            System.arraycopy(cube.getFace(RubixCube.Faces.BOTTOM), 0, bottom, 0, cubeSize);
             drawFace(g, xOffs, yOffs, dx, dy, bottom);
         }
     }
