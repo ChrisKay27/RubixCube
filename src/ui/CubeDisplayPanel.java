@@ -15,11 +15,9 @@ import static java.awt.Color.YELLOW;
 
 public class CubeDisplayPanel extends JPanel {
 
-    private int cubeSize;
     private RubixCube cube;
 
-    public CubeDisplayPanel(int cubeSize, RubixCube cube) {
-        this.cubeSize = cubeSize;
+    public CubeDisplayPanel(RubixCube cube) {
         this.cube = cube;
     }
 
@@ -27,6 +25,9 @@ public class CubeDisplayPanel extends JPanel {
     public void paintComponent(Graphics g){
         int width = this.getWidth();
         int height = this.getHeight();
+
+        RubixCube cube = this.cube;
+        int cubeSize = cube.getSize();
 
         int offsX = width/3, offsY = height/4;
         int dx = width/(cube.getSize()*3), dy = height/(cube.getSize()*4);
@@ -114,13 +115,6 @@ public class CubeDisplayPanel extends JPanel {
     }
 
 
-    public int getCubeSize() {
-        return cubeSize;
-    }
-
-    public void setCubeSize(int cubeSize) {
-        this.cubeSize = cubeSize;
-    }
 
     public RubixCube getCube() {
         return new RubixCube(cube);

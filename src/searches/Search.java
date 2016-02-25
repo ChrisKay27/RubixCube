@@ -11,7 +11,7 @@ public interface Search {
 	}
 
 	List<Searchable.EdgeChildPair> findGoal(Searchable s, Searchable targetState);
-	List<SearchResult> findGoals(List<Searchable> ss, Searchable targetState);
+	List<List<Searchable.EdgeChildPair>> findGoals(List<Searchable> ss, Searchable targetState);
 
 	void stop();
 

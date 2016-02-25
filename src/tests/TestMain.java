@@ -1,16 +1,23 @@
 package tests;
 
-import cube.RubixCube;
+import experiment.ExperimentResultsWriter;
+import tests.searches.TestSearch;
+import training.TrainingDataGenerator.TestTrainingDataGenerator;
 
-import static cube.RubixCube.*;
+import static cube.RubixCube.RubixCubeTester;
 
 /**
- * Created by chris_000 on 1/12/2016.
+ *
+ * Created by Chris on 1/12/2016.
  */
 public class TestMain {
     public static void main(String[] args) {
         boolean success;
         success = RubixCubeTester.test();
-        System.out.println(success);
+        success &= TestTrainingDataGenerator.test();
+        success &= TestSearch.test();
+        success &= ExperimentResultsWriter.TestExperimentResultsWriter.test();
+
+        System.out.println("Unit Test results:" + success);
     }
 }

@@ -1,6 +1,0 @@
-([Cube;Front:[R,O,O,O,O,O,R,O,O],Right:[G,G,O,G,G,W,G,G,O],Back:[B,B,G,W,B,W,B,B,G],Left:[R,R,B,R,R,Y,R,R,B],Top:[W,B,W,R,W,W,W,B,W],Bottom:[Y,Y,Y,Y,Y,G,Y,Y,Y]],NS:1:ccw)
-([Cube;Front:[W,B,W,O,O,O,W,B,W],Right:[O,W,O,G,G,G,G,G,G],Back:[Y,Y,Y,W,B,W,Y,Y,Y],Left:[R,R,R,R,R,R,B,Y,B],Top:[B,B,G,R,W,W,B,B,G],Bottom:[R,O,O,Y,Y,G,R,O,O]],NS:1:cw)
-([Cube;Front:[R,O,O,O,O,O,R,O,O],Right:[O,G,G,W,G,G,O,G,G],Back:[B,B,G,W,B,W,B,B,G],Left:[B,R,R,Y,R,R,B,R,R],Top:[W,B,W,R,W,W,W,B,W],Bottom:[Y,Y,Y,Y,Y,G,Y,Y,Y]],NS:1:cw)
-([Cube;Front:[Y,Y,Y,O,O,O,Y,Y,Y],Right:[G,G,G,G,G,G,O,W,O],Back:[W,B,W,W,B,W,W,B,W],Left:[B,Y,B,R,R,R,R,R,R],Top:[R,O,O,R,W,W,R,O,O],Bottom:[B,B,G,Y,Y,G,B,B,G]],EW:0:ccw)
-([Cube;Front:[Y,Y,Y,O,O,O,Y,Y,Y],Right:[G,G,G,G,G,G,G,G,G],Back:[W,W,W,B,B,B,W,W,W],Left:[R,R,R,R,R,R,R,R,R],Top:[O,O,O,W,W,W,O,O,O],Bottom:[B,B,B,Y,Y,Y,B,B,B]],NS:1:ccw)
-([Cube;Front:[O,O,O,O,O,O,O,O,O],Right:[G,G,G,G,G,G,G,G,G],Back:[B,B,B,B,B,B,B,B,B],Left:[R,R,R,R,R,R,R,R,R],Top:[W,W,W,W,W,W,W,W,W],Bottom:[Y,Y,Y,Y,Y,Y,Y,Y,Y]],null)

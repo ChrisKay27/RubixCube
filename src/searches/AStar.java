@@ -19,12 +19,8 @@ public class AStar implements Search {
 	private final Consumer<Searchable> pathTracer;
 	private boolean stopFlag;
 
-//    private List<Searchable> closedSet;
-//    private List<Searchable> openSet;
-    private Set<Searchable> closedSet;
-    private Set<Searchable> openSet;
-//    private HashMap<Searchable,Integer> closedSet;
-//    private HashMap<Searchable,Integer>  openSet;
+    private Set<Searchable> closedSet = new HashSet<>();
+    private Set<Searchable> openSet = new HashSet<>();
 
 
     private boolean currentlyExploring = false;
@@ -40,18 +36,17 @@ public class AStar implements Search {
             throw new RuntimeException("Currently Exploring and trying to find goal again! Create a new search!");
         currentlyExploring = true;
 
-        closedSet = new HashSet<>();
-        openSet = new HashSet<>();
-//        closedSet = new HashMap<>();
-//        openSet = new HashMap<>();
-//        closedSet = new ArrayList<>();
-//        openSet = new ArrayList<>();
+        closedSet = new HashSet<>(10000000);
+        openSet = new HashSet<>(10000000);
 
-		Map<EdgeChildPair, EdgeChildPair> cameFrom = new HashMap<>();
+		//Path tracing hash map
+		Map<EdgeChildPair, EdgeChildPair> cameFrom = new HashMap<>(10000000);
 
-		Map<Searchable,Integer> fScore = new HashMap<>();
-		fScore.put(start,start.distanceFrom(targetState));
+		//Map to store f score
+		Map<Searchable,Integer> fScore = new HashMap<>(10000000);
+		fScore.put(start,start.heuristicDistanceTo(targetState));
 
+		//Priority Queue initialization
 		Comparator<EdgeChildPair> c = (o1, o2) -> {
             long dist1 = fScore.get(o1.child);
             long dist2 = fScore.get(o2.child);
@@ -60,14 +55,16 @@ public class AStar implements Search {
             return 0;
         };
 		PriorityQueue<EdgeChildPair> priorityQueue = new PriorityQueue<>(c);
-        openSet.add(start); //openSet.put(start,0);//
+        openSet.add(start);
 		priorityQueue.add(new EdgeChildPair(null,start));
 
+		//Map to stop g score
 		Map<Searchable,Integer> gScore = new HashMap<>();
 		gScore.put(start,0);
 
 
-		//System.out.println("start.distanceFrom(targetState)=" + start.distanceFrom(targetState));
+		//System.out.println("start.heuristicDistanceTo(targetState)=" + start.heuristicDistanceTo(targetState));
+
 
 		while(!priorityQueue.isEmpty()){
 			if(stopFlag){
@@ -81,40 +78,49 @@ public class AStar implements Search {
 			if( pathTracer != null )
 				pathTracer.accept(current);
 
-			long distanceFromGoal = current.distanceFrom(targetState);
+			long distanceFromGoal = current.heuristicDistanceTo(targetState);
 			if ( distanceFromGoal == 0){
 				if( current.equals(targetState)) {
-					System.out.println("Goal state found!: " + current);
+					//System.out.println("Goal state found!: " + current);
 					return reconstruct_path(cameFrom, ecp);
 				}
 			}
-			else {
-                //System.out.println(distanceFromGoal);
-            }
+
 			openSet.remove(current);
-            closedSet.add(current); //closedSet.put(current,0);//
+            closedSet.add(current);
 
 			List<EdgeChildPair> children = current.getChildren();
-			//System.out.println("Adding " + children.size() + " children states.");c
+
+			int childrens_g_score = gScore.get(current) + 1;
 			for (EdgeChildPair neighbor : children ){
-				if( closedSet.contains(neighbor.child) ) //closedSet.containsKey(neighbor.child) ) //
-					continue;
 
-				int tentative_g_score = gScore.get(current) + 1;
+                final Searchable child = neighbor.child;
+                int newFCost = childrens_g_score + child.heuristicDistanceTo(targetState);
 
-				if( !openSet.contains(neighbor.child) ) {//!openSet.containsKey(neighbor.child) ) { //
-					openSet.add(neighbor.child); //openSet.put(neighbor.child,0); //
-					gScore.put(neighbor.child, tentative_g_score);
-					fScore.put(neighbor.child, tentative_g_score + neighbor.child.distanceFrom(targetState));
+                if( closedSet.contains(child) ) {
+
+                    if( fScore.get(child) > newFCost ){
+                        fScore.put(child,newFCost);
+                        closedSet.remove(child);
+                        openSet.add(child);
+                        priorityQueue.add(neighbor);
+                    }
+                    continue;
+                }
+
+				if( !openSet.contains(child) ) {
+					openSet.add(child);
+					gScore.put(child, childrens_g_score);
+					fScore.put(child, newFCost);
 					priorityQueue.add(neighbor);
 				}
-				else if (tentative_g_score >= gScore.get(neighbor.child))
+				else if (childrens_g_score >= gScore.get(child))
 					continue;// This is not a better path.
 
 				// This path is the best until now. Record it!
 				cameFrom.put(neighbor,ecp);
-				gScore.put(neighbor.child, tentative_g_score);
-				fScore.put(neighbor.child, tentative_g_score + neighbor.child.distanceFrom(targetState));
+				gScore.put(child, childrens_g_score);
+				fScore.put(child, newFCost);
 			}
 		}
         currentlyExploring = false;
@@ -134,14 +140,14 @@ public class AStar implements Search {
 
 		Collections.reverse(path);
         currentlyExploring = false;
-		//System.out.println("");
 		return path;
 	}
 
 	@Override
-	public List<SearchResult> findGoals(List<Searchable> ss, Searchable targetState) {
-
-		return null;
+	public List<List<EdgeChildPair>> findGoals(List<Searchable> ss, Searchable targetState) {
+        List<List<EdgeChildPair>> results = new ArrayList<>();
+        ss.forEach(searchable -> results.add(findGoal(searchable,targetState)));
+		return results;
 	}
 
 
@@ -151,16 +157,22 @@ public class AStar implements Search {
 	}
 
 
+
+	private SearchDiagnostic searchDiagnostic;
     public SearchDiagnostic getSearchDiagnostic(){
-        return new SearchDiagnostic() {
-            @Override
-            public long getStatesExplored() {
-                return closedSet.size();
-            }
-            @Override
-            public long getKnownUnexploredStates() {
-                return openSet.size();
-            }
-        };
+		if( searchDiagnostic == null )
+			searchDiagnostic = new SearchDiagnostic() {
+				@Override
+				public long getStatesExplored() {
+					return closedSet.size();
+				}
+				@Override
+				public long getKnownUnexploredStates() {
+					return openSet.size();
+				}
+			};
+        return searchDiagnostic;
     }
+
+
 }

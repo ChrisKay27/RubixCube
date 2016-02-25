@@ -3,6 +3,8 @@ package cube;
 import com.google.common.primitives.Bytes;
 
 import searches.Searchable;
+import util.WTFException;
+
 import java.util.*;
 
 import static cube.RubixCube.Color.*;
@@ -33,6 +35,7 @@ public class RubixCube implements Searchable {
 	private final byte[][][] faces = new byte[6][][];
 	//private final Face[] faces = new Face[6];
 
+
 	public RubixCube(RubixCube rubixCube) {
 		this.size = rubixCube.size;
 
@@ -43,19 +46,7 @@ public class RubixCube implements Searchable {
                 System.arraycopy(face[i], 0, faces[k][i], 0, size);
             }
         }
-
-
-
-//		faces[i++] = new Face(rubixCube.getFace(FRONT));
-//		faces[i++] = new Face(rubixCube.getFace(RIGHT));
-//		faces[i++] = new Face(rubixCube.getFace(BACK));
-//		faces[i++] = new Face(rubixCube.getFace(LEFT));
-//		faces[i++] = new Face(rubixCube.getFace(TOP));
-//		faces[i] =   new Face(rubixCube.getFace(BOTTOM));
 	}
-
-
-
 
 	public RubixCube(int size) {
 		this.size = size;
@@ -67,6 +58,54 @@ public class RubixCube implements Searchable {
 					faces[i][k][j] = FACE_COLORS[i];
 		}
 	}
+
+
+	/**
+	 * Used to recreate a cube from a string to verify my test results were actually legit.
+	 * @param fromString a string produced from a rubixCube.toString() call.
+     */
+	public RubixCube(String fromString) {
+		fromString = fromString.substring(fromString.indexOf(':')+1, fromString.length()-1);
+
+		String[] parts = fromString.split(":");
+		for (int i = 0; i < parts.length; i++) {
+			parts[i] = parts[i].substring(1,parts[i].lastIndexOf(']'));
+		}
+
+		size = (int) Math.sqrt(parts[0].length()/2 + 1);
+
+		for (int faceCount = 0; faceCount < 6; faceCount++) {
+			faces[faceCount] = new byte[size][size];
+
+			String[] colorChars = parts[faceCount].split(",");
+			int count = 0;
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					faces[faceCount][i][j] = colorCharToByte(colorChars[count].charAt(0));
+					count++;
+				}
+			}
+		}
+	}
+
+
+
+	private static byte colorCharToByte(char c){
+		if( c == 'R' )
+			return Color.RED;
+		else if( c == 'B' )
+			return Color.BLUE;
+		else if( c == 'Y' )
+			return Color.YELLOW;
+		else if( c == 'W' )
+			return Color.WHITE;
+		else if( c == 'G' )
+			return Color.GREEN;
+		else if( c == 'O' )
+			return Color.ORANGE;
+		throw new WTFException("Bad char value! : " + c);
+	}
+
 
 	@Override
 	public List<EdgeChildPair> getChildren() {
@@ -82,10 +121,7 @@ public class RubixCube implements Searchable {
 		return childrenStates;
 	}
 
-    public EdgeChildPair getAChild() {
-        List<EdgeChildPair> childrenStates = getChildren();
-        return childrenStates.get((int)(Math.random()*childrenStates.size()));
-    }
+
 
 
 	public RubixCube rotateNS(int col, boolean down){
@@ -111,15 +147,9 @@ public class RubixCube implements Searchable {
 
 		while(rotations --> 0) {
 			if(col == 0)
-				if(down)
-					rotateCW(nCube.getFace(Faces.LEFT));
-				else
-					rotateCCW(nCube.getFace(Faces.LEFT));
+				rotateCW(nCube.getFace(Faces.LEFT));
 			else if(col == size-1)
-				if(down)
-					rotateCCW(nCube.getFace(Faces.RIGHT));
-				else
-					rotateCW(nCube.getFace(Faces.RIGHT));
+				rotateCCW(nCube.getFace(Faces.RIGHT));
 
 			byte[] topcol = getCol(top,col);
 			setCol(top,col, getCol(back,col));
@@ -155,15 +185,9 @@ public class RubixCube implements Searchable {
 		while(rotations --> 0 ) {
 
 			if(col == 0)
-				if(cw)
-					rotateCCW(nCube.getFace(Faces.BACK));
-				else
-					rotateCW(nCube.getFace(Faces.BACK));
+				rotateCCW(nCube.getFace(Faces.BACK));
 			else if(col == size-1)
-				if(cw)
-					rotateCW(nCube.getFace(Faces.FRONT));
-				else
-					rotateCCW(nCube.getFace(Faces.FRONT));
+				rotateCW(nCube.getFace(Faces.FRONT));
 
 
 			byte[] topRow = getRow(top,col);
@@ -174,47 +198,7 @@ public class RubixCube implements Searchable {
 		}
 		return nCube;
 	}
-//	public RubixCube rotateEW(int col, boolean cw){
-//		RubixCube nCube = this;// new RubixCube(this);
-//
-//		if( size%2 == 1 && col == size/2 ){
-//			for (int i = 0; i < size; i++) {
-//				if( i != col )
-//					rotateEW(i,!cw);
-//			}
-//			return nCube;
-//		}
-//
-//		int rotations = 1;
-//		if( !cw )
-//			rotations = 3;
-//
-//		Face right = nCube.getFace(RIGHT);
-//		Face left = nCube.getFace(LEFT);
-//		Face top = nCube.getFace(TOP);
-//		Face bottom = nCube.getFace(BOTTOM);
-//
-//		while(rotations --> 0 ) {
-//			if(col == 0)
-//				if(cw)
-//					nCube.getFace(Faces.BACK).rotateCCW();
-//				else
-//					nCube.getFace(Faces.BACK).rotateCW();
-//			else if(col == size-1)
-//				if(cw)
-//					nCube.getFace(Faces.FRONT).rotateCW();
-//				else
-//					nCube.getFace(Faces.FRONT).rotateCCW();
-//
-//
-//			byte[] topRow = top.getRow(col);
-//			top.setRow(col, reverse(left.getCol(col)));
-//			left.setCol(col, bottom.getRow(size-col-1));
-//			bottom.setRow(size-col-1, reverse(right.getCol(size-col-1)));
-//			right.setCol(size-col-1, topRow);
-//		}
-//		return nCube;
-//	}
+
 
 	public RubixCube rotateRow(int row, boolean cw){
 		RubixCube nCube = this;//new RubixCube(this);
@@ -240,16 +224,9 @@ public class RubixCube implements Searchable {
 
 		while(rotations --> 0 ) {
 			if(row == 0)
-				if(cw)
-					rotateCW(nCube.getFace(Faces.TOP));
-				else
-					rotateCCW(nCube.getFace(Faces.TOP));
+				rotateCW(nCube.getFace(Faces.TOP));
 			else if(row == size-1)
-				if(cw)
-					rotateCCW(nCube.getFace(Faces.BOTTOM));
-				else
-					rotateCW(nCube.getFace(Faces.BOTTOM));
-
+				rotateCCW(nCube.getFace(Faces.BOTTOM));
 
 			byte[] frontrow = getRow(front,row);
 			setRow(front, row, getRow(right,row));
@@ -262,54 +239,6 @@ public class RubixCube implements Searchable {
 
 
 
-//
-//	public RubixCube rotateRow(int row, boolean cw){
-//		RubixCube nCube = this;//new RubixCube(this);
-//
-//		if( size%2 == 1 && row == size/2 ){
-//			for (int i = 0; i < size; i++) {
-//				if( i != row )
-//					rotateRow(i,!cw);
-//			}
-//			return nCube;
-//		}
-//
-//		int rotations = 1;
-//		if( !cw )
-//			rotations = 3;
-//
-//		Face front = nCube.getFace(FRONT);
-//		Face right = nCube.getFace(RIGHT);
-//		Face back = nCube.getFace(BACK);
-//		Face left = nCube.getFace(LEFT);
-//
-//
-//		while(rotations --> 0 ) {
-//			if(row == 0)
-//				if(cw)
-//					nCube.getFace(Faces.TOP).rotateCW();
-//				else
-//					nCube.getFace(Faces.TOP).rotateCCW();
-//			else if(row == size-1)
-//				if(cw)
-//					nCube.getFace(Faces.BOTTOM).rotateCCW();
-//				else
-//					nCube.getFace(Faces.BOTTOM).rotateCW();
-//
-//
-//			byte[] frontrow = front.getRow(row);
-//			front.setRow(row, right.getRow(row));
-//			right.setRow(row, reverse(back.getRow(size-row-1)));
-//			back.setRow(size-row-1, reverse(left.getRow(row)));
-//			left.setRow(row, frontrow);
-//		}
-//		return nCube;
-//	}
-
-//	public Face getFace(Faces face) {
-//		return faces[face.ordinal()];
-//	}
-
 	public byte[][] getFace(Faces face) {
 		return faces[face.ordinal()];
 	}
@@ -320,17 +249,11 @@ public class RubixCube implements Searchable {
 	}
 
 
-	@Override
-	public boolean isGoal() {
-		for (int i = 0; i < 6; i++)
-			if( !isSolid(faces[i]))
-				return false;
-		return true;
-	}
+
 
 
 	@Override
-	public int distanceFrom(Searchable s) {
+	public int heuristicDistanceTo(Searchable s) {
 		if( !(s instanceof RubixCube) ) return Integer.MAX_VALUE;
 
 		RubixCube cube = (RubixCube) s;
@@ -339,7 +262,7 @@ public class RubixCube implements Searchable {
 		for (int i = 0; i < 6; i++) {
 
 			distance += faceDistanceFrom(faces[i], FACE_COLORS[i],cube.faces[i]);
-			//faces[i].distanceFrom(cube.faces[i]);
+			//faces[i].heuristicDistanceTo(cube.faces[i]);
 		}
 
 		return distance/8;
@@ -412,7 +335,7 @@ public class RubixCube implements Searchable {
 	}
 
 
-	public static void rotateCCW(byte[][] face){
+	public static void rotateCW(byte[][] face){
 		//System.out.println("Rotate cw");
 		byte[][] newFace = new byte[face.length][face.length];
 
@@ -429,7 +352,7 @@ public class RubixCube implements Searchable {
 
 	}
 
-	public static void rotateCW(byte[][] face){
+	public static void rotateCCW(byte[][] face){
 		//System.out.println("Rotate ccw");
 		byte[][] newFace = new byte[face.length][face.length];
 
@@ -490,6 +413,7 @@ public class RubixCube implements Searchable {
 		return true;
 	}
 
+
 	public static boolean faceEquals(byte[][] face1, byte[][] face2) {
 
 		for (int i = 0; i < face1.length; ++i)
@@ -499,6 +423,8 @@ public class RubixCube implements Searchable {
 
 		return true;
 	}
+
+
 
 	public static String faceToString(byte[][] face) {
 		StringBuilder sb = new StringBuilder();
@@ -522,6 +448,11 @@ public class RubixCube implements Searchable {
 		return s + "]";
 	}
 
+
+
+    /**
+     * Used to find a heuristic distance between the two faces given
+     */
 	public long faceDistanceFrom(byte[][] face1, byte face1Color, byte[][] face2) {
 		long distance=0;
 
@@ -538,6 +469,9 @@ public class RubixCube implements Searchable {
 		return distance;
 	}
 
+    /**
+     * Used to see if the color c is on a face adjacent to face with color c1
+     */
 	private static boolean isAdjacent(byte c1, byte c){
 		if( c1 == Color.RED )
 			return c != Color.GREEN;
@@ -553,6 +487,7 @@ public class RubixCube implements Searchable {
 			return c != Color.WHITE;
 		return false;
 	}
+
 
 	private static byte[][] faceCopy(byte[][] face){
 		byte[][] newFace = new byte[face.length][face.length];
@@ -619,7 +554,7 @@ public class RubixCube implements Searchable {
 					face[i][j] = (byte) (j + i*size);
 
 			rotateCW(face);
-			if( face[0][0] != 2 || face[0][1] != 0 ||face[1][0] != 3 ||face[1][1] != 1 ){
+			if( face[0][0] != 1 || face[0][1] != 3 ||face[1][0] != 0 ||face[1][1] != 2 ){
 				System.out.println("failed rotate cw!" + faceToString(face));
 				return false;
 			}
@@ -895,6 +830,7 @@ public class RubixCube implements Searchable {
             return true;
         }
 
+
 		private static void doRandomMove(RubixCube r1, RubixCube r2) {
 			boolean dir = Math.random()<0.5;
 			int colOrRow = (int)(Math.random()*r1.getSize());
@@ -933,11 +869,13 @@ public class RubixCube implements Searchable {
 
 			return true;
 		}
-
 	}
 
 
 
+	/**
+	 * Helper main method... ignore this
+     */
 	public static void main(String[] args) {
 
 		byte[][] face = new byte[3][3];
@@ -958,9 +896,9 @@ public class RubixCube implements Searchable {
 		System.out.println("rotate ccw 3x");
 		rotateCCW(face);rotateCCW(face);rotateCCW(face);
 		print(face);
-
-
 	}
+
+
 
 	public static void print(byte[][] face) {
 		for (int i = 0; i < 3; i++) {

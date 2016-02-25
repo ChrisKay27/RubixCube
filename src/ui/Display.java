@@ -1,7 +1,9 @@
 package ui;
 
 import cube.RubixCube;
-import experiment.Experiment;
+import de.javasoft.plaf.synthetica.SyntheticaBlackEyeLookAndFeel;
+import experiment.ExperimentResultsWriter;
+import experiment.RubixCubeExperiment;
 import experiment.ExperimentParameters;
 import experiment.Tuple;
 import searches.*;
@@ -13,45 +15,68 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Created by chris_000 on 1/5/2016.
+ *
+ * Created by Chris on 1/5/2016.
  */
 public class Display {
+    private static final boolean autoRestartProgramAfterCompletion = false;
+    private static final boolean autoStartExperiment = false;
+
+    private boolean showCubeStatesDuringSearch = false;
 
     private int cubeSize = 3;
-    private int moves = 4;
-    private int giveUpAfterStates = 1000000;
+    private int MOVES = 10;
+    private int GIVEUPAFTERSTATES = 3000000;
 
-    private final JButton getChild;
     private final CubeDisplayPanel cubePanel;
     private final JPanel layout;
     private final Runnable updateDiagnosticsPanel;
     private final JList<Tuple> resultsList;
+    private final JButton solveButton;
+    private final JButton stopButton;
 
     private SearchDiagnostic searchDiagnostic;
 
-
     private int sleepTime = 0;
-    private Experiment experiment;
+    private RubixCubeExperiment experiment;
+
 
     public Display() {
 
         JFrame window = new JFrame("Rubix");
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("Neural Net",new NeuralNetPanel());
+
+        //Setup menu bar
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu experimentMenu = new JMenu("Experiments");
+        JMenuItem experimentMenuItem = new JMenuItem("RubixCubeExperiment",'e');
+        experimentMenuItem.addActionListener(e -> new ExperimentPopupWindow(Display.this));
+        experimentMenu.add(experimentMenuItem);
+        menuBar.add(experimentMenu);
+
+
+        JMenuItem NNexperimentMenu = new JMenuItem("NN Experiment",'e');
+        experimentMenuItem.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
+        experimentMenu.add(experimentMenuItem);
+        menuBar.add(experimentMenu);
+
+        window.setJMenuBar(menuBar);
+
 
         layout = new JPanel(new BorderLayout());
-        cubePanel = new CubeDisplayPanel(cubeSize, new RubixCube(cubeSize));
+        cubePanel = new CubeDisplayPanel(new RubixCube(cubeSize));
         cubePanel.setMinimumSize(new Dimension(900,900));
         cubePanel.setSize(900,900);
         layout.add(cubePanel,BorderLayout.CENTER);
 
-
+        //Top panel which shows the size of the open and closed lists
         JPanel diagnosticPanel = new JPanel();
         diagnosticPanel.setMinimumSize(new Dimension(200,900));
         diagnosticPanel.setSize(900,900);
@@ -67,6 +92,16 @@ public class Display {
                 diagnosticPanel.repaint();
             }
         };
+
+
+        JCheckBox showCubeStatesDuringSearchCheckbox = new JCheckBox("Show cube states during search.");
+        showCubeStatesDuringSearchCheckbox.setSelected(showCubeStatesDuringSearch);
+        showCubeStatesDuringSearchCheckbox.addActionListener(e -> {
+            showCubeStatesDuringSearch = showCubeStatesDuringSearchCheckbox.isSelected();
+        });
+        diagnosticPanel.add(showCubeStatesDuringSearchCheckbox);
+
+
         diagnosticPanel.add(exploredStatesLabel);
         diagnosticPanel.add(exploredStatesValueLabel);
         diagnosticPanel.add(knownUnexploredStatesLabel);
@@ -74,23 +109,31 @@ public class Display {
         layout.add(diagnosticPanel,BorderLayout.NORTH);
 
 
-        JPanel resultView = new JPanel();
+        JButton doMove = new JButton("Do Move");
+
+
+        JPanel resultView = new JPanel(new BorderLayout());
         resultView.setMinimumSize(new Dimension(900,900));
         resultView.setSize(900,900);
+        resultView.setBorder(BorderFactory.createTitledBorder("Results View"));
+        resultView.add(new JLabel("       Try clicking on the tuples once the simulation is done         "),BorderLayout.NORTH);
+
+
         resultsList = new JList<>();
         resultsList.setModel(new DefaultListModel<>());
         resultView.add(resultsList);
         resultsList.addListSelectionListener(e1 -> {
             Tuple t = resultsList.getSelectedValue();
-            cubePanel.setCube((RubixCube) t.state);
-            layout.repaint();
+            if( t != null ) {
+                cubePanel.setCube((RubixCube) t.state);
+                layout.repaint();
+                doMove.setEnabled(true);
+            }
         });
-        //((DefaultListModel<String>)resultsList.getModel()).addElement(cube.toString());
         layout.add(resultView,BorderLayout.EAST);
 
 
         JPanel buttons = new JPanel(new FlowLayout());
-
 
         JLabel colLabel = new JLabel("Col:");
         JComboBox<Integer> col = new JComboBox<>();
@@ -147,7 +190,7 @@ public class Display {
         });
         buttons.add(rotateRow);
 
-        getChild = new JButton("getChild");
+        JButton getChild = new JButton("getChild");
         getChild.addActionListener(e -> {
             java.util.List<EdgeChildPair> children = cubePanel.getCube().getChildren();
             EdgeChildPair edgeChildPair = children.get((int) (Math.random()*children.size()));
@@ -157,35 +200,31 @@ public class Display {
         buttons.add(getChild);
 
 
-        JButton stop = new JButton("Stop");
-        JButton solve = new JButton("Solve!");
+        stopButton = new JButton("Stop");
+        solveButton = new JButton("Solve!");
 
-        stop.addActionListener(e -> {
+        stopButton.addActionListener(e -> {
             if(experiment != null)
                 experiment.stop();
-            stop.setEnabled(false);
-            solve.setEnabled(true);
+            stopButton.setEnabled(false);
+            solveButton.setEnabled(true);
         });
-        stop.setEnabled(false);
+        stopButton.setEnabled(false);
 
 
-//        solve.addActionListener(e -> {
-//
-//            solve.setEnabled(false);
-//            stop.setEnabled(true);
-//        });
-//        buttons.add(solve);
-        buttons.add(stop);
+        buttons.add(stopButton);
 
-        JButton runExpButton = new JButton("Run Experiment!");
-        runExpButton.addActionListener(e -> {
 
-            runExperiment(new ExperimentParameters(Search.Searches.ASTAR,cubeSize, 1000000, 5 ));
+        solveButton.addActionListener(e -> {
+            ExperimentParameters expParams = new ExperimentParameters(Search.Searches.ASTAR,cubeSize, GIVEUPAFTERSTATES, MOVES );
+            //expParams.setStartState(new RubixCube(cubePanel.getCube()));
 
-            runExpButton.setEnabled(false);
-            stop.setEnabled(true);
+            runExperiment(expParams);
+
+            solveButton.setEnabled(false);
+            stopButton.setEnabled(true);
         });
-        buttons.add(runExpButton);
+        buttons.add(solveButton);
 
         JTextField sleepTimeField = new JTextField(sleepTime+"");
         sleepTimeField.setColumns(30);
@@ -193,7 +232,8 @@ public class Display {
             try {
                 sleepTime = Integer.parseInt(sleepTimeField.getText());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                //ex.printStackTrace();
+                sleepTimeField.setText("0");
             }
         };
         sleepTimeField.addActionListener(e -> updateSleepBetweenStatesTime.run());
@@ -205,21 +245,55 @@ public class Display {
         });
         buttons.add(sleepTimeField);
 
-
-
-        JButton doMove = new JButton("Do Move");
         doMove.setEnabled(false);
         doMove.addActionListener(e -> {
-            //EdgeChildPair move = ((DefaultListModel<EdgeChildPair>)resultsList.getModel()).get(0);
+            Tuple moveTuple = ((DefaultListModel<Tuple>)resultsList.getModel()).get(resultsList.getSelectedIndex());
+            cubePanel.setCube(new RubixCube((RubixCube) moveTuple.state));
+            String move = (String) moveTuple.edge;
+            if( move != null ) {
+                String[] parts = move.split(":");
+                int colOrRow = Integer.parseInt(parts[1]);
+
+                boolean cw = parts[2].equals("cw");
+                dir.setSelectedIndex(cw ? 0 : 1);
+
+                switch (parts[0]){
+                    case "EW":
+                        //System.out.println("Rotating ew col " + colOrRow + (cw?"cw":"ccw"));
+                        col.setSelectedIndex(colOrRow+1);
+                        rotateEW.doClick();
+                        break;
+                    case "NS":
+                        //System.out.println("Rotating ns col " + colOrRow + (cw?"down":"up"));
+                        col.setSelectedIndex(colOrRow+1);
+                        rotateNS.doClick();
+                        break;
+                    case "Row":
+                        //System.out.println("Rotating row " + colOrRow + (cw?"cw":"ccw"));
+                        row.setSelectedIndex(colOrRow+1);
+                        rotateRow.doClick();
+                        break;
+                }
+            }
         });
+        buttons.add(doMove);
 
         layout.add(buttons,BorderLayout.SOUTH);
 
+        tabbedPane.addTab("Searches",layout);
+        window.setContentPane(tabbedPane);
 
-        window.setContentPane(layout);
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        window.setSize(1500,1000);
+
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int width = gd.getDisplayMode().getWidth();
+        int height = gd.getDisplayMode().getHeight();
+        window.setSize(width-100,height-100);
         window.setVisible(true);
+
+        if( autoStartExperiment ){
+            solveButton.doClick();
+        }
     }
 
 
@@ -230,151 +304,136 @@ public class Display {
             @Override
             public void run() {
 
-                Consumer<Searchable> c = nCube -> {
-                    cubePanel.setCube((RubixCube) nCube);
-                    layout.repaint();
-
-                    if( sleepTime > 0 )
-                        try {
-                            Thread.sleep(sleepTime);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
+                expParams.setPathTracer(getPathTracer());
+                expParams.setTooManyStatesListener(()->{
+                    restartProgram();
+                    System.exit(0);
+                });
 
 
-                    SwingUtilities.invokeLater(updateDiagnosticsPanel);
-                };
+                RubixCubeExperiment exp = new RubixCubeExperiment(expParams);
 
-                expParams.setPathTracer(c);
-
-                Experiment exp = new Experiment(expParams);
                 searchDiagnostic = exp.getSearchDiagnostic();
                 experiment = exp;
 
 
-                System.out.println("Beginning Experiment!");
-                List<EdgeChildPair> result = exp.runExperiment();
+                System.out.println("Beginning RubixCubeExperiment!");
+                List<Tuple> resultTuples = exp.runExperiment();
 
-                //If we have pressed the stop button then the search will return an empty list.
-                if(result.isEmpty())
-                    return;
+                if( resultTuples != null ) {
 
+                    ExperimentResultsWriter.writeResultsToFile("results",cubeSize,resultTuples);
 
+                    new ExperimentCompletePopupWindow(resultTuples.size());
 
-                List<Tuple> resultTuples = new ArrayList<>();
-                RubixCube nextState = (RubixCube) result.get(0).child;
-                result.remove(0);
+                    updateResultsPanel(resultTuples);
 
-                for (EdgeChildPair ecp : result){
-                    Tuple t = new Tuple(nextState,ecp.edge);
-                    System.out.println(t);
-                    resultTuples.add(t);
-                    nextState = (RubixCube) ecp.child;
+                    if (autoRestartProgramAfterCompletion)
+                        possiblyStartAnotherRun();
                 }
-
-                Tuple t = new Tuple(nextState,null);
-                resultTuples.add(t);
-
-
-                writeResultsToFile(cubeSize,resultTuples);
-                updateResultsPanel(resultTuples);
-
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-
-                SwingUtilities.invokeLater(layout::repaint);
+                stopButton.setEnabled(false);
+                solveButton.setEnabled(true);
             }
         };
         t.setDaemon(true);
         t.start();
     }
 
-    private void updateResultsPanel(List<Tuple> resultTuples) {
+    Consumer<Searchable> getPathTracer(){
+        return nCube -> {
+            if( !showCubeStatesDuringSearch )
+                return;
+
+            cubePanel.setCube((RubixCube) nCube);
+            layout.repaint();
+
+            if( sleepTime > 0 )
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+
+
+            SwingUtilities.invokeLater(updateDiagnosticsPanel);
+        };
+    }
+
+    void possiblyStartAnotherRun() {
+        if( !autoRestartProgramAfterCompletion )
+            return;
+
+        File f = new File("C:\\Users\\chris_000\\SkyDrive\\Documents\\School\\CPSC 371 AI\\RubixCube\\results");
+
+        int expCount=0;
+
+        for(String fileName : f.list()){
+            if(fileName.endsWith(".txt"))
+                expCount++;
+        }
+        //So if there are less than 100000 results then restart the program and close this jvm
+        if( expCount < 100000 ){
+            restartProgram();
+            System.exit(0);
+        }
+    }
+
+
+    void updateResultsPanel(List<Tuple> resultTuples) {
         SwingUtilities.invokeLater(()->{
-            System.out.println("Adding " + resultTuples.size() + " to the results panel.");
+            ((DefaultListModel<Tuple>)resultsList.getModel()).clear();
+            //System.out.println("Adding " + resultTuples.size() + " to the results panel.");
             resultTuples.forEach(t -> ((DefaultListModel<Tuple>)resultsList.getModel()).addElement(t));
             layout.repaint();
+        });
+        SwingUtilities.invokeLater(layout::repaint);
+    }
+
+
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(()->{
+            try {
+                UIManager.removeAuxiliaryLookAndFeel(UIManager.getLookAndFeel());
+
+                UIManager.setLookAndFeel(new SyntheticaBlackEyeLookAndFeel());
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            new Display();
         });
     }
 
 
-    public static void main(String[] args) {
-		new Display();
-	}
 
 
-
-    private static void writeResultsToFile(int cubeSize, List<Tuple> results ){
-        String filename = cubeSize+"x"+cubeSize+"x"+cubeSize+"x"+"-exp";
-
-        File f = null;
-        int count=1;
-        while( f == null ){
-            f = new File(filename+ count++ +".txt");
-            if( !f.exists() )
-                try {
-                    boolean created = f.createNewFile();
-                    if( !created )
-                        f = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            else
-                f = null;
-        }
-
-
-        try(PrintWriter pw = new PrintWriter(f)) {
-
-            for (Tuple t : results)
-                pw.write(t + "\n");
-
-
-//            RubixCube nextState = (RubixCube) results.get(0).child;
-//            results.remove(0);
-//            for (EdgeChildPair ecp : results){
-//                String move = "(" + nextState + "," + ecp.edge + ")\n";
-//				nextState = (RubixCube) ecp.child;
-//				pw.write(move);
-//            }
-//			String move = "(" + nextState + ",null)\n";
-//			pw.write(move);
-            pw.flush();
-
-        } catch (FileNotFoundException e) {
+    public static void restartProgram()  {
+        String separator = System.getProperty("file.separator");
+        String classpath = System.getProperty("java.class.path");
+        String path = System.getProperty("java.home")
+                + separator + "bin" + separator + "java";
+        ProcessBuilder processBuilder =
+                new ProcessBuilder(path, "-cp",
+                        classpath,
+                        Display.class.getName());
+        try {
+            processBuilder.start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
+    public void setSearchDiagnostic(SearchDiagnostic searchDiagnostic) {
+        this.searchDiagnostic = searchDiagnostic;
+    }
 
+    public void setExperiment(RubixCubeExperiment experiment) {
+        this.experiment = experiment;
+    }
 
-
-
-    /*
-
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                Runnable task = new Runnable() {
-                    @Override
-                    public void run() {
-                        if( result.isEmpty() ) {
-                            solve.setEnabled(true);
-                            executor.shutdown();
-                            return;
-                        }
-                        cube = (RubixCube) result.remove(0).child;
-                        System.out.println(cube.hashCode());
-                        layout.repaint();
-                        executor.schedule(this, 1, TimeUnit.SECONDS);
-                    }
-                };
-
-                //executor.schedule(task, 1, TimeUnit.SECONDS);
-     */
-
-
+    public RubixCube getDisplayedCube() {
+        return cubePanel.getCube();
+    }
 }

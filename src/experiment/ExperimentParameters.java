@@ -1,5 +1,6 @@
 package experiment;
 
+import cube.RubixCube;
 import searches.Search.Searches;
 import searches.Searchable;
 
@@ -15,6 +16,8 @@ public class ExperimentParameters {
     private int giveUpAfterStates;
     private int depth;
     private Consumer<Searchable> pathTracer;
+    private TooManyStatesListener tooManyStatesListener;
+    private RubixCube startState;
 
     public ExperimentParameters(Searches search, int cubeSize, int giveUpAfterStates, int depth) {
         this.search = search;
@@ -50,6 +53,22 @@ public class ExperimentParameters {
 
     public Consumer<Searchable> getPathTracer() {
         return pathTracer;
+    }
+
+    public TooManyStatesListener getTooManyStatesListener() {
+        return tooManyStatesListener;
+    }
+
+    public void setTooManyStatesListener(TooManyStatesListener tooManyStatesListener) {
+        this.tooManyStatesListener = tooManyStatesListener;
+    }
+
+    public void setStartState(RubixCube startState) {
+        this.startState = startState;
+    }
+
+    public RubixCube getStartState() {
+        return startState;
     }
 }
 
