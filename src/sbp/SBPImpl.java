@@ -18,4 +18,7 @@ public interface SBPImpl {
 
     void setNetworkError(double networkError);
 
+    double getNetworkError();
+
+    SBPImpl copy();
 }

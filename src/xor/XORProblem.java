@@ -2,6 +2,7 @@ package xor;
 
 import neuralnet.*;
 import sbp.SBP;
+import sbp.SBP.SBPResults;
 import sbp.SBPImpl;
 import sbp.SBPParams;
 
@@ -62,7 +63,7 @@ public class XORProblem {
     }
 
 
-    public void run() {
+    public SBPResults run() {
         SBPParams sbpParams = new SBPParams();
         sbpParams.setN(N);
         sbpParams.setDeriv_sigmoid(deriv_sigmoid);
@@ -72,12 +73,14 @@ public class XORProblem {
         sbpParams.setEpocs(epochs);
         sbpParams.setTrainingIterations(trainingIterations);
 
-        SBPImpl nn = SBP.runExperiment(sbpParams, neuralNet,trainingTuples);
+        final SBPResults sbpResults = SBP.runExperiment(sbpParams, neuralNet, trainingTuples);
+        NeuralNet nn = (NeuralNet) sbpResults.sbpImpl;
         if( nn != null ) {
-            System.out.println("Success!");
-            NeuralNetIO.saveNN((NeuralNet) nn);
+            NeuralNetIO.saveNN(nn);
+            return sbpResults;
         }else
             System.out.println("Failure!");
+        return sbpResults;
     }
 
 

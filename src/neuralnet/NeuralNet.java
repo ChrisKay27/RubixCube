@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class NeuralNet implements SBPImpl, Serializable {
 
+
     private final List<Neuron> inputNeurons = new ArrayList<>();
     private final List<List<Neuron>> hiddenLayers = new ArrayList<>();
     private final List<Neuron> outputNeurons = new ArrayList<>();
@@ -28,9 +29,7 @@ public class NeuralNet implements SBPImpl, Serializable {
      */
     public NeuralNet(NeuralNet neuralNet) {
         params = neuralNet.params;
-
         init();
-
 
         for (int hiddenLayerIndex = 0; hiddenLayerIndex < params.getNumberOfHiddenLayers(); hiddenLayerIndex++) {
             List<Neuron> hiddenNeurons = hiddenLayers.get(hiddenLayerIndex);
@@ -49,6 +48,8 @@ public class NeuralNet implements SBPImpl, Serializable {
 
         for (int j = 0; j < bias.getOutputEdges().size(); j++)
             bias.getOutputEdges().get(j).set(neuralNet.bias.getOutputEdges().get(j));
+
+        networkError = neuralNet.networkError;
     }
 
 
@@ -190,5 +191,10 @@ public class NeuralNet implements SBPImpl, Serializable {
 
     public NeuralNetParams getNNParams() {
         return params;
+    }
+
+    @Override
+    public NeuralNet copy() {
+        return new NeuralNet(this);
     }
 }

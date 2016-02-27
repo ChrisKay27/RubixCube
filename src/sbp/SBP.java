@@ -13,7 +13,10 @@ import java.util.function.Function;
 public class SBP {
 
 
-    public static SBPImpl runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
+
+    public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
+
+        SBPImpl currentBest = sbpImpl;
 
         double N = params.getN();
         Function<Double,Double> deriv_sigmoid = params.getDeriv_sigmoid();
@@ -21,7 +24,7 @@ public class SBP {
 
         int count=0;
         for (int epoc = 0; epoc < params.getEpocs(); epoc++) {
-            System.out.println("Starting epoc " + epoc);
+//            System.out.println("Starting epoc " + epoc);
 
             Map<Neuron,Double> deltas = new HashMap<>();
 
@@ -96,24 +99,32 @@ public class SBP {
 
                 sbpImpl.setNetworkError(networkError);
 
-                sbpListener.run();
+                if(sbpListener != null)
+                    sbpListener.run();
 
 
-                count++;
-                if( count % 100 == 0 )
-                    System.out.println("Inputs: " + tt.getInputs().get(0) + "," + tt.getInputs().get(1) + " Expected output: "+tt.getExpectedOutputs().get(0)+" Actual output: "+actualOutput.get(0)+" Network error: " + networkError );
+//                count++;
+//                if( count % 100 == 0 )
+//                    System.out.println("Inputs: " + tt.getInputs().get(0) + "," + tt.getInputs().get(1) + " Expected output: "+tt.getExpectedOutputs().get(0)+" Actual output: "+actualOutput.get(0)+" Network error: " + networkError );
 
+                if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ){
+                    currentBest = sbpImpl.copy();
+                }
 
                 if( networkError < params.getDesiredErrorRate() ){
-                    System.out.println("Success! after " + ((i+1)*(epoc+1)) + " runs");
-                    System.out.println("Network error: " + networkError );
-                    return sbpImpl;
+//                    System.out.println("Success! after " + ((i+1)*(epoc+1)) + " runs");
+//                    System.out.println("Network error: " + networkError );
+                    SBPResults sbpResults = new SBPResults(((epoc)*params.getTrainingIterations())+(i+1),epoc+1,sbpImpl.getNetworkError(),sbpImpl);
+
+                    return sbpResults;
                 }
             }
             sbpImpl.init();
         }
 
-        return null;
+        SBPResults sbpResults = new SBPResults((params.getEpocs())*(params.getTrainingIterations()),params.getEpocs(),sbpImpl.getNetworkError(),sbpImpl);
+
+        return sbpResults;
     }
 
     public static double deltaK(double T, double Z, double net, Function<Double,Double> deriv_sigmoid) {
@@ -141,4 +152,18 @@ public class SBP {
         return N*actI*deltaJ;
     }
 
+
+    public static class SBPResults{
+        public final int numberOfIterationsTaken;
+        public final int numberOfEpochs;
+        public final double networkError;
+        public final SBPImpl sbpImpl;
+
+        public SBPResults(int numberOfIterationsTaken, int numberOfEpochs, double networkError, SBPImpl sbpImpl) {
+            this.numberOfIterationsTaken = numberOfIterationsTaken;
+            this.numberOfEpochs = numberOfEpochs;
+            this.networkError = networkError;
+            this.sbpImpl = sbpImpl;
+        }
+    }
 }

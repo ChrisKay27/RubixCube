@@ -3,6 +3,8 @@ package ui;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import neuralnet.*;
+import sbp.SBP;
+import sbp.SBP.SBPResults;
 import xor.XORProblem;
 
 import javax.swing.*;
@@ -161,6 +163,8 @@ public class NeuralNetPanel extends JPanel {
         temp.add(loadNNButton);
         northPanel.add(temp);
 
+        JLabel warningLabel = new JLabel("<html>You must hit 'create NN' before pressing<br> 'run' to create a NN with these parameters.</html>");
+        northPanel.add(warningLabel);
 
         add(northPanel,BorderLayout.NORTH);
 
@@ -282,11 +286,17 @@ public class NeuralNetPanel extends JPanel {
         FILLER = new JLabel("          ");
         southPanel.add(FILLER);
 
-        final JButton run = new JButton("Run");
+        final JButton run = new JButton("Run (The NN above)");
         run.addActionListener(e -> new Thread(()->{
             run.setEnabled(false);
-            xorProblem.run();
+
+            final SBPResults runResults = xorProblem.run();
+            double error = runResults.networkError;
+            System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
+
+            updateUIRunnable.run();
             run.setEnabled(true);
+
         }).start());
         southPanel.add(run);
 
@@ -317,6 +327,10 @@ public class NeuralNetPanel extends JPanel {
         });
         updateUICheckbox.setSelected(true);
         southPanel.add(updateUICheckbox);
+
+        JLabel infoLabel = new JLabel("Note: You have to press 'Create NN' to create a new NN with the above parameters");
+        southPanel.add(infoLabel);
+
         add(southPanel, BorderLayout.SOUTH);
 
 

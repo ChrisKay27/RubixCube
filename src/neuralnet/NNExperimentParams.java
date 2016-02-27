@@ -1,16 +1,16 @@
 package neuralnet;
 
 public class NNExperimentParams {
-    private final double a;
-    private final double b;
-    private final double n;
-    private final boolean usingBias;
-    private final int epochs;
-    private final int trainingIterationsPerEpoch;
-    private final int hiddenLayers;
-    private final double desiredErrorRate;
-    private final int[] hiddenNeuronsPerLayer;
-    private final double alpha;
+    private double a;
+    private double b;
+    private double n;
+    private boolean usingBias;
+    private int epochs;
+    private int trainingIterationsPerEpoch;
+    private int hiddenLayers;
+    private double desiredErrorRate;
+    private int[] hiddenNeuronsPerLayer;
+    private double alpha;
 
 
     public NNExperimentParams(double a, double b, double n, boolean usingBias, int epochs, int trainingIterationsPerEpoch, int hiddenLayers, double desiredErrorRate, double alpha, int... hiddenNeuronsPerLayer) {
@@ -66,4 +66,43 @@ public class NNExperimentParams {
         return alpha;
     }
 
+    public void setA(double a) {
+        this.a = a;
+    }
+
+    public void setB(double b) {
+        this.b = b;
+    }
+
+    public void setN(double n) {
+        this.n = n;
+    }
+
+    public void setUsingBias(boolean usingBias) {
+        this.usingBias = usingBias;
+    }
+
+    public void setEpochs(int epochs) {
+        this.epochs = epochs;
+    }
+
+    public void setTrainingIterationsPerEpoch(int trainingIterationsPerEpoch) {
+        this.trainingIterationsPerEpoch = trainingIterationsPerEpoch;
+    }
+
+    public void setHiddenLayers(int hiddenLayers) {
+        this.hiddenLayers = hiddenLayers;
+    }
+
+    public void setDesiredErrorRate(double desiredErrorRate) {
+        this.desiredErrorRate = desiredErrorRate;
+    }
+
+    public void setHiddenNeuronsPerLayer(int[] hiddenNeuronsPerLayer) {
+        this.hiddenNeuronsPerLayer = hiddenNeuronsPerLayer;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
 }

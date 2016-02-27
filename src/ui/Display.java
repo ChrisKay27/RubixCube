@@ -59,12 +59,11 @@ public class Display {
         JMenuItem experimentMenuItem = new JMenuItem("RubixCubeExperiment",'e');
         experimentMenuItem.addActionListener(e -> new ExperimentPopupWindow(Display.this));
         experimentMenu.add(experimentMenuItem);
-        menuBar.add(experimentMenu);
 
 
-        JMenuItem NNexperimentMenu = new JMenuItem("NN Experiment",'e');
-        experimentMenuItem.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
-        experimentMenu.add(experimentMenuItem);
+        JMenuItem NNexperimentMenu = new JMenuItem("NN Experiment",'n');
+        NNexperimentMenu.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
+        experimentMenu.add(NNexperimentMenu);
         menuBar.add(experimentMenu);
 
         window.setJMenuBar(menuBar);
