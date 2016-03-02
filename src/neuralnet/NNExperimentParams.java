@@ -7,19 +7,21 @@ public class NNExperimentParams {
     private boolean usingBias;
     private int epochs;
     private int trainingIterationsPerEpoch;
+    private int inputs;
     private int hiddenLayers;
     private double desiredErrorRate;
     private int[] hiddenNeuronsPerLayer;
     private double alpha;
 
 
-    public NNExperimentParams(double a, double b, double n, boolean usingBias, int epochs, int trainingIterationsPerEpoch, int hiddenLayers, double desiredErrorRate, double alpha, int... hiddenNeuronsPerLayer) {
+    public NNExperimentParams(double a, double b, double n, boolean usingBias, int epochs, int trainingIterationsPerEpoch, int inputs, int hiddenLayers, double desiredErrorRate, double alpha, int... hiddenNeuronsPerLayer) {
         this.a = a;
         this.b = b;
         this.n = n;
         this.usingBias = usingBias;
         this.epochs = epochs;
         this.trainingIterationsPerEpoch = trainingIterationsPerEpoch;
+        this.inputs = inputs;
         this.hiddenLayers = hiddenLayers;
         this.desiredErrorRate = desiredErrorRate;
         this.alpha = alpha;
@@ -88,6 +90,14 @@ public class NNExperimentParams {
 
     public void setTrainingIterationsPerEpoch(int trainingIterationsPerEpoch) {
         this.trainingIterationsPerEpoch = trainingIterationsPerEpoch;
+    }
+
+    public int getInputs() {
+        return inputs;
+    }
+
+    public void setInputs(int inputs) {
+        this.inputs = inputs;
     }
 
     public void setHiddenLayers(int hiddenLayers) {

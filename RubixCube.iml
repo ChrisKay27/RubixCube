@@ -11,5 +11,6 @@
     <orderEntry type="library" name="annotations" level="project" />
     <orderEntry type="library" name="synthetica" level="application" />
     <orderEntry type="library" name="jgraphx" level="application" />
+    <orderEntry type="library" name="guava-18.0" level="application" />
   </component>
 </module>

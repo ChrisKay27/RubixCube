@@ -3,7 +3,6 @@ package ui;
 import neuralnet.NNExperimentParams;
 import neuralnet.NeuralNet;
 import neuralnet.NeuralNetIO;
-import xor.XORProblem;
 
 import javax.swing.*;
 import java.awt.*;
@@ -145,6 +144,6 @@ public class NNParamsPanel extends JPanel{
             String num = hNeuronsSpl[i];
             hNeurons[i] = Integer.parseInt(num);
         }
-        return new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, hiddenLayers, desiredErrorRate, alpha, hNeurons);
+        return new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch,324, hiddenLayers, desiredErrorRate, alpha, hNeurons);
     }
 }

@@ -3,10 +3,11 @@ package xor;
 import neuralnet.*;
 import sbp.SBP;
 import sbp.SBP.SBPResults;
-import sbp.SBPImpl;
 import sbp.SBPParams;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 /**

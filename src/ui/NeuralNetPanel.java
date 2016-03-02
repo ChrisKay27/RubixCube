@@ -1,11 +1,10 @@
 package ui;
 
+import NNRubixCube.NNRubixCube;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import neuralnet.*;
-import sbp.SBP;
 import sbp.SBP.SBPResults;
-import xor.XORProblem;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +24,7 @@ public class NeuralNetPanel extends JPanel {
 
     private boolean updateUI = true;
     private int sleepTime = 100;
-    private XORProblem xorProblem = new XORProblem(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 1, 0.000001 , 0.01, 2));
+    private NNRubixCube xorProblem = new NNRubixCube(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
 
     private Runnable updateUIRunnable;
 
@@ -130,7 +129,7 @@ public class NeuralNetPanel extends JPanel {
                 hNeurons[i] = Integer.parseInt(num);
             }
 
-            xorProblem = new XORProblem(new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, hiddenLayers, desiredErrorRate, alpha, hNeurons));
+            xorProblem = new NNRubixCube(new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons));
             xorProblem.setUpdateListener(updateUIRunnable);
             xorProblem.init();
 

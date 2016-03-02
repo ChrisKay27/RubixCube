@@ -12,7 +12,7 @@ import static cube.RubixCube.Faces.*;
 
 
 /**
- * Created by chris_000 on 1/5/2016.
+ * Created by Chris on 1/5/2016.
  */
 public class RubixCube implements Searchable {
 
