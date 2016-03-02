@@ -1,5 +1,6 @@
 package main;
 
+import tests.NNTestMain;
 import tests.TestMain;
 import training.TrainingDataGenerator;
 import ui.Display;
@@ -17,6 +18,10 @@ public class Main {
             }
             else if("-unittest".equals(s.toLowerCase())){
                 TestMain.main(args);
+                System.exit(1);
+            }
+            else if("-unittestnn".equals(s.toLowerCase())){
+                NNTestMain.main(args);
                 System.exit(1);
             }
         }

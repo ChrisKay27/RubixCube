@@ -12,12 +12,25 @@ import static cube.RubixCube.RubixCubeTester;
  */
 public class TestMain {
     public static void main(String[] args) {
-        boolean success;
-        success = RubixCubeTester.test();
-        success &= TestTrainingDataGenerator.test();
-        success &= TestSearch.test();
-        success &= ExperimentResultsWriter.TestExperimentResultsWriter.test();
+        boolean success, tmpSuccess;
 
-        System.out.println("Unit Test results:" + success);
+
+        tmpSuccess = RubixCubeTester.test();
+        System.out.println("Testing RubixCube results: " + tmpSuccess);
+        success = tmpSuccess;
+
+        tmpSuccess = TestTrainingDataGenerator.test();
+        System.out.println("Testing training data generator, results: " + tmpSuccess);
+        success &= tmpSuccess;
+
+        tmpSuccess = TestSearch.test();
+        System.out.println("Testing Search, results: " + tmpSuccess);
+        success &= tmpSuccess;
+
+        tmpSuccess = ExperimentResultsWriter.TestExperimentResultsWriter.test();
+        System.out.println("Testing Expreiments Results Writer, results: " + tmpSuccess);
+        success &= tmpSuccess;
+
+        System.out.println("\nUnit Test results:" + success);
     }
 }

@@ -160,7 +160,20 @@ public class NeuralNetPanel extends JPanel {
             }
         });
         temp.add(loadNNButton);
+
+        final JButton saveNNButton = new JButton("Save NN");
+        saveNNButton.addActionListener(e -> {
+
+            int returnVal = fc.showSaveDialog(NeuralNetPanel.this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+
+                NeuralNetIO.saveNN(xorProblem.getNeuralNet(), file);
+            }
+        });
+        temp.add(saveNNButton);
         northPanel.add(temp);
+
 
         JLabel warningLabel = new JLabel("<html>You must hit 'create NN' before pressing<br> 'run' to create a NN with these parameters.</html>");
         northPanel.add(warningLabel);
@@ -175,9 +188,9 @@ public class NeuralNetPanel extends JPanel {
 
 
         updateUIRunnable = () -> {
-            //System.out.println("updating graph");
+                //System.out.println("updating graph");
                 if(!updateUI) return;
-
+               // System.out.println("actually updating graph");
                 final NeuralNet neuralNet = new NeuralNet(xorProblem.getNeuralNet());
                 SwingUtilities.invokeLater(()->{
                     graph.getModel().beginUpdate();
@@ -252,8 +265,8 @@ public class NeuralNetPanel extends JPanel {
         add(graphComponent,BorderLayout.CENTER);
 
 
-        JPanel southPanel = new JPanel();
 
+        JPanel southPanel = new JPanel();
 
         JLabel TTLabel = new JLabel("Training Tuple:");
         JTextField TTField = new JTextField("-1,-1",20);
@@ -285,15 +298,25 @@ public class NeuralNetPanel extends JPanel {
         FILLER = new JLabel("          ");
         southPanel.add(FILLER);
 
+
+        JCheckBox updateUICheckbox = new JCheckBox("Update UI");
+
+
         final JButton run = new JButton("Run (The NN above)");
         run.addActionListener(e -> new Thread(()->{
             run.setEnabled(false);
-
+            System.out.println("Running Experiment!");
             final SBPResults runResults = xorProblem.run();
+
             double error = runResults.networkError;
+            System.out.println("Experiment over!");
             System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
 
+            updateUI = true;
             updateUIRunnable.run();
+
+            updateUICheckbox.setSelected(true);
+
             run.setEnabled(true);
 
         }).start());
@@ -319,7 +342,7 @@ public class NeuralNetPanel extends JPanel {
         });
         southPanel.add(sleepTimeField);
 
-        JCheckBox updateUICheckbox = new JCheckBox("Update UI");
+
         updateUICheckbox.addActionListener(e->{
             updateUI = updateUICheckbox.isSelected();
             updateUIRunnable.run();

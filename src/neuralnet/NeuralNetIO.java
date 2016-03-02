@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class NeuralNetIO {
 
-    public static void saveNN(NeuralNet NN){
+    public static void saveNN(NeuralNet NN, File NNFile){
         try {
             File NNFolder = new File("NN");
             if(!NNFolder.exists())
@@ -41,9 +41,6 @@ public class NeuralNetIO {
             String error = formatter.format(NN.getNetworkError());
             sb.append("_Error_").append(error);
 
-
-            String fileName = sb.toString();
-            File NNFile = new File(fileName);
 
             NNFile.createNewFile();
 

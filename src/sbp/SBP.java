@@ -8,37 +8,34 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Created by chris_000 on 2/9/2016.
+ * Created by Chris on 2/9/2016.
  */
 public class SBP {
 
-
-
     public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
-
+        //local to keep track of the best network so far
         SBPImpl currentBest = sbpImpl;
 
+        //locals to save having params.get~ everywhere
         double N = params.getN();
         Function<Double,Double> deriv_sigmoid = params.getDeriv_sigmoid();
         Runnable sbpListener = params.getSBPListener();
 
-        int count=0;
-        for (int epoc = 0; epoc < params.getEpocs(); epoc++) {
-//            System.out.println("Starting epoc " + epoc);
 
+        for (int epoc = 0; epoc < params.getEpocs(); epoc++) {
             Map<Neuron,Double> deltas = new HashMap<>();
 
             for (int i = 0; i < params.getTrainingIterations(); i++) {
-                //System.out.println("Starting run " + i);
                 deltas.clear();
 
+                //Apply training tuple to the SBPImpl and get the output
                 TrainingTuple tt = trainingTuples.get((int)(Math.random()*trainingTuples.size()));
                 List<Double> expectedOutput = tt.getExpectedOutputs();
                 List<Double> actualOutput = sbpImpl.feedForward(tt.getInputs());
 
 
+                //Calculate DeltaK and DeltaKJ
                 List<Neuron> outputNeurons = sbpImpl.getOutputNeurons();
-
                 for (int o = 0; o < outputNeurons.size(); o++) {
                     Neuron output = outputNeurons.get(o);
 
@@ -58,9 +55,8 @@ public class SBP {
                 }
 
 
+                //Calculate DeltaJ and DeltaJI
                 final List<List<Neuron>> hiddenLayers = sbpImpl.getHiddenLayers();
-
-
                 for (int hidLayInd = hiddenLayers.size()-1; hidLayInd >= 0 ; --hidLayInd) {
                     List<Neuron> hiddenNeurons = hiddenLayers.get(hidLayInd);
                     for (Neuron hidden : hiddenNeurons) {
@@ -79,11 +75,11 @@ public class SBP {
                     }
                 }
 
-
+                //Apply edge weight updates
                 sbpImpl.getOutputNeurons().forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha())));
                 hiddenLayers.forEach(hiddenNeurons->hiddenNeurons.forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha()))));
 
-
+                //Calc network error
                 double networkError = 0;
                 for (TrainingTuple TT : trainingTuples){
 
@@ -96,29 +92,29 @@ public class SBP {
                     vectorDistance /= 2;
                     networkError += vectorDistance;
                 }
-
                 sbpImpl.setNetworkError(networkError);
 
+                //Something likes to listen to the SBP algorithm I guess
                 if(sbpListener != null)
                     sbpListener.run();
 
-
-//                count++;
-//                if( count % 100 == 0 )
-//                    System.out.println("Inputs: " + tt.getInputs().get(0) + "," + tt.getInputs().get(1) + " Expected output: "+tt.getExpectedOutputs().get(0)+" Actual output: "+actualOutput.get(0)+" Network error: " + networkError );
-
+                //Keep track of the best NN
                 if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ){
                     currentBest = sbpImpl.copy();
                 }
 
+                //If the network error is below a desired amount then just return
                 if( networkError < params.getDesiredErrorRate() ){
-//                    System.out.println("Success! after " + ((i+1)*(epoc+1)) + " runs");
-//                    System.out.println("Network error: " + networkError );
+
                     SBPResults sbpResults = new SBPResults(((epoc)*params.getTrainingIterations())+(i+1),epoc+1,sbpImpl.getNetworkError(),sbpImpl);
 
                     return sbpResults;
                 }
             }
+
+            System.out.println("Epoch " + epoc + " over, error: " + currentBest.getNetworkError());
+
+            //Reinit sbpImpl for the next epoch
             sbpImpl.init();
         }
 
@@ -132,14 +128,15 @@ public class SBP {
     }
 
     public static Double deltaKj(double deltaK, double actJ, double N) {
-//        if( biasEdge ) System.out.println("deltaKj Bias neuron");
-//        else System.out.println("deltaKj non-bias neuron");
         return N * deltaK * actJ;
     }
 
+
     public static double deltaJ(Neuron hidden, Map<Neuron, Double> deltas, Function<Double,Double> deriv_sigmoid) {
+        //ActJ
         double t = deriv_sigmoid.apply(hidden.getNet());
 
+        //Sum( WeightsOfOutputEdges*DeltaKAtOutput)
         double sumOfWeightMultErrors = 0;
         for(Edge e : hidden.getOutputEdges()){
             sumOfWeightMultErrors += e.getWeight()*deltas.get(e.getDest());

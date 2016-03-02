@@ -77,7 +77,7 @@ public class XORProblem {
         final SBPResults sbpResults = SBP.runExperiment(sbpParams, neuralNet, trainingTuples);
         NeuralNet nn = (NeuralNet) sbpResults.sbpImpl;
         if( nn != null ) {
-            NeuralNetIO.saveNN(nn);
+            neuralNet = nn;
             return sbpResults;
         }else
             System.out.println("Failure!");

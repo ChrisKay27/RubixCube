@@ -14,8 +14,11 @@ public class Neuron implements Serializable {
 
     private double net;
     private double act;
+
+    //For UI purposes
     private String name;
 
+    //Name for UI purposes
     public Neuron(String name) {
         this.name = name;
     }

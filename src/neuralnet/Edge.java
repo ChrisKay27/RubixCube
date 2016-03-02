@@ -62,4 +62,8 @@ public class Edge implements Serializable {
     public void setPrevDeltaWeight(double prevDeltaWeight) {
         this.prevDeltaWeight = prevDeltaWeight;
     }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
 }

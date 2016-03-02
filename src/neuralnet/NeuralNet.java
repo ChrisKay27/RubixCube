@@ -116,6 +116,7 @@ public class NeuralNet implements SBPImpl, Serializable {
     public List<Double> feedForward(List<Double> input){
         //hidden layers
 
+
         hiddenLayers.forEach(hiddenNeurons -> {
                     for (int h = 0; h < hiddenNeurons.size(); h++) {
                         Neuron hiddenNeuron = hiddenNeurons.get(h);
@@ -131,9 +132,8 @@ public class NeuralNet implements SBPImpl, Serializable {
                     }
                 });
 
+
         List<Double> outputs = new ArrayList<>();
-
-
         //output layer
         for (int o = 0; o < outputNeurons.size(); o++) {
             Neuron outputNeuron = outputNeurons.get(o);
