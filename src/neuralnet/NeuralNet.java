@@ -18,7 +18,7 @@ public class NeuralNet implements SBPImpl, Serializable {
     private Neuron bias;
 
     private final NeuralNetParams params;
-    private double networkError;
+    private double networkError = Double.MAX_VALUE;
 
     public NeuralNet(NeuralNetParams params) {
         this.params = params;

@@ -333,9 +333,10 @@ public class NeuralNetPanel extends JPanel {
 
         JCheckBox updateUICheckbox = new JCheckBox("Update UI");
 
-
+        final JButton stopButton = new JButton("Stop");
         final JButton run = new JButton("Run (The NN above)");
         run.addActionListener(e -> new Thread(()->{
+            stopButton.setEnabled(true);
             run.setEnabled(false);
 
             sbpNNExperiment.setEpochs(getEpochs());
@@ -352,24 +353,32 @@ public class NeuralNetPanel extends JPanel {
 
                 List<TrainingTuple> trainingTuples = NNTrainingDataLoader.loadTrainingTuples(file);
                 sbpNNExperiment.setTrainingTuples(trainingTuples);
+                System.out.println("Running Experiment!");
+                final SBPResults runResults = sbpNNExperiment.run();
+
+                double error = runResults.networkError;
+                System.out.println("Experiment over!");
+                System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
+
+                updateUI = true;
+                updateUIRunnable.run();
+
+                updateUICheckbox.setSelected(true);
             }
 
-            System.out.println("Running Experiment!");
-            final SBPResults runResults = sbpNNExperiment.run();
-
-            double error = runResults.networkError;
-            System.out.println("Experiment over!");
-            System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
-
-            updateUI = true;
-            updateUIRunnable.run();
-
-            updateUICheckbox.setSelected(true);
-
             run.setEnabled(true);
-
+            stopButton.setEnabled(false);
         }).start());
         southPanel.add(run);
+
+
+        stopButton.addActionListener(e->{
+            stopButton.setEnabled(false);
+            sbpNNExperiment.stop();
+
+        });
+        southPanel.add(stopButton);
+
 
         JLabel delayLabel = new JLabel("Delay:");
         southPanel.add(delayLabel);

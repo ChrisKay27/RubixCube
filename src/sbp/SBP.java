@@ -13,6 +13,8 @@ import java.util.function.Function;
 public class SBP {
 
     public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
+//        System.out.println("Number training tuples: " + trainingTuples.size());
+
         //local to keep track of the best network so far
         SBPImpl currentBest = sbpImpl.copy();
 
@@ -94,7 +96,7 @@ public class SBP {
                 }
 
                 //If the network error is below a desired amount then just return
-                if( networkError < params.getDesiredErrorRate() ){
+                if( networkError < params.getDesiredErrorRate() || params.stopFlag() ){
                     sbpImpl = currentBest;
                     SBPResults sbpResults = new SBPResults(((epoc)*params.getTrainingIterations())+(i+1),epoc+1,currentBest.getNetworkError(),currentBest);
 
@@ -142,6 +144,7 @@ public class SBP {
 
 
     public static double calculateNetworkError(SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
+//        System.out.println("Number training tuples: " + trainingTuples.size());
         double networkError = 0;
         for (TrainingTuple TT : trainingTuples){
 

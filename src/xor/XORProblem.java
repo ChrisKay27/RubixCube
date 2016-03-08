@@ -151,4 +151,9 @@ public class XORProblem implements SBPNNExperiment {
     public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
 
     }
+
+    @Override
+    public void stop() {
+
+    }
 }

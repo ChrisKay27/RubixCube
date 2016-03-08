@@ -22,4 +22,6 @@ public interface SBPNNExperiment {
     double calcNetworkError(List<TrainingTuple> trainingTupleList);
 
     public void setTrainingTuples(List<TrainingTuple> trainingTuples);
+
+    void stop();
 }

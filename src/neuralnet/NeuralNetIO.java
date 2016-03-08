@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
 /**
@@ -57,7 +58,9 @@ public class NeuralNetIO {
     public static NeuralNet loadNN(File NNFile){
         try (ObjectInputStream oos = new ObjectInputStream(new FileInputStream(NNFile))) {
 
-            return (NeuralNet) oos.readObject();
+            NeuralNet nn = (NeuralNet) oos.readObject();
+            nn.setNetworkError(Double.MAX_VALUE);
+            return nn;
 
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();

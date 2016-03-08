@@ -38,6 +38,7 @@ public class NNRubixCube implements SBPNNExperiment {
 
     private Runnable updateListener;
     private int inputs;
+    private SBPParams sbpParams;
 
     public NNRubixCube(NNExperimentParams params) {
         A = params.getA();
@@ -71,7 +72,7 @@ public class NNRubixCube implements SBPNNExperiment {
 
     public SBPResults run() {
 
-        SBPParams sbpParams = new SBPParams();
+        sbpParams = new SBPParams();
         sbpParams.setN(N);
         sbpParams.setDeriv_sigmoid(deriv_sigmoid);
         sbpParams.setSBPListener(updateListener);
@@ -143,5 +144,12 @@ public class NNRubixCube implements SBPNNExperiment {
 
     public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
         NNRubixCube.trainingTuples = trainingTuples;
+    }
+
+    @Override
+    public void stop() {
+        if( sbpParams != null )
+            sbpParams.setStopFlag(true);
+
     }
 }

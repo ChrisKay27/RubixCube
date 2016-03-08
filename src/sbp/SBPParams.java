@@ -14,6 +14,7 @@ public class SBPParams {
     private double alpha;
     private int epocs;
     private int trainingIterations;
+    private boolean stopFlag;
 
 
     public double getN() {
@@ -72,5 +73,13 @@ public class SBPParams {
 
     public void setTrainingIterations(int trainingIterations) {
         this.trainingIterations = trainingIterations;
+    }
+
+    public boolean stopFlag() {
+        return stopFlag;
+    }
+
+    public void setStopFlag(boolean stopFlag) {
+        this.stopFlag = stopFlag;
     }
 }
