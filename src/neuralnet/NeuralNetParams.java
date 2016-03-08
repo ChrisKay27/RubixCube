@@ -21,6 +21,7 @@ public class NeuralNetParams implements Serializable {
     private int[] hiddenNeuronsInLayer;
 
 
+
     public int getInputNeurons() {
         return inputNeurons;
     }
@@ -70,4 +71,6 @@ public class NeuralNetParams implements Serializable {
     public void setHiddenNeuronsInLayer(int... hiddenNeuronsInLayer) {
         this.hiddenNeuronsInLayer = hiddenNeuronsInLayer;
     }
+
+
 }

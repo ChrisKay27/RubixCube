@@ -22,9 +22,20 @@ import java.util.Map;
  */
 public class NeuralNetPanel extends JPanel {
 
+    private final JTextField ErrorRateTextBox;
+    private final JTextField BTextBox;
+    private final JTextField NTextBox;
+    private final JTextField AlphaTextBox;
+    private final JTextField TrainingItsTextBox;
+    private final JTextField EpochTextBox;
+    private final JTextField ATextBox;
+    private final JTextField TTField;
+    private final JButton FFButton;
+    private final JLabel OutputLabel;
+
     private boolean updateUI = true;
     private int sleepTime = 100;
-    private NNRubixCube xorProblem = new NNRubixCube(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
+    private NNRubixCube sbpNNExperiment = new NNRubixCube(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
 
     private Runnable updateUIRunnable;
 
@@ -32,14 +43,14 @@ public class NeuralNetPanel extends JPanel {
 
     public NeuralNetPanel() {
         super(new BorderLayout());
-        xorProblem.init();
+        sbpNNExperiment.init();
 
         JPanel northPanel = new JPanel(new GridLayout(2,10));
 
 
         JPanel temp = new JPanel();
         JLabel ALabel = new JLabel("A:");
-        JTextField ATextBox = new JTextField("1.716",10);
+        ATextBox = new JTextField("1.716",10);
         ALabel.setLabelFor(ATextBox);
         temp.add(ALabel);
         temp.add(ATextBox);
@@ -47,7 +58,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel BLabel = new JLabel("B:");
-        JTextField BTextBox = new JTextField("0.667",10);
+        BTextBox = new JTextField("0.667",10);
         BLabel.setLabelFor(BTextBox);
         temp.add(BLabel);
         temp.add(BTextBox);
@@ -55,7 +66,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel NLabel = new JLabel("Learning Rate:");
-        JTextField NTextBox = new JTextField("0.125",10);
+        NTextBox = new JTextField("0.125",10);
         NLabel.setLabelFor(NTextBox);
         temp.add(NLabel);
         temp.add(NTextBox);
@@ -63,7 +74,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel alphaLabel = new JLabel("Momentum Alpha:");
-        JTextField AlphaTextBox = new JTextField("0.01",5);
+        AlphaTextBox = new JTextField("0.01",5);
         alphaLabel.setLabelFor(AlphaTextBox);
         temp.add(alphaLabel);
         temp.add(AlphaTextBox);
@@ -71,7 +82,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel TrainingItsLabel = new JLabel("Training Iterations:");
-        JTextField TrainingItsTextBox = new JTextField("1000",10);
+        TrainingItsTextBox = new JTextField("1000",10);
         TrainingItsLabel.setLabelFor(TrainingItsTextBox);
         temp.add(TrainingItsLabel);
         temp.add(TrainingItsTextBox);
@@ -79,7 +90,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel EpochLabel = new JLabel("Training Epochs:");
-        JTextField EpochTextBox = new JTextField("100",6);
+        EpochTextBox = new JTextField("100",6);
         EpochLabel.setLabelFor(EpochTextBox);
         temp.add(EpochLabel);
         temp.add(EpochTextBox);
@@ -103,7 +114,7 @@ public class NeuralNetPanel extends JPanel {
 
         temp = new JPanel();
         JLabel ErrorRateLabel = new JLabel("Error Rate:");
-        JTextField ErrorRateTextBox = new JTextField("0.000001",20);
+        ErrorRateTextBox = new JTextField("0.000001",20);
         ErrorRateLabel.setLabelFor(ErrorRateTextBox);
         temp.add(ErrorRateLabel);
         temp.add(ErrorRateTextBox);
@@ -129,9 +140,9 @@ public class NeuralNetPanel extends JPanel {
                 hNeurons[i] = Integer.parseInt(num);
             }
 
-            xorProblem = new NNRubixCube(new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons));
-            xorProblem.setUpdateListener(updateUIRunnable);
-            xorProblem.init();
+            sbpNNExperiment = new NNRubixCube(new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons));
+            sbpNNExperiment.setUpdateListener(updateUIRunnable);
+            sbpNNExperiment.init();
 
             boolean updateUITemp = updateUI;
             updateUI = true;
@@ -151,7 +162,9 @@ public class NeuralNetPanel extends JPanel {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
-                xorProblem.setNeuralNet(NeuralNetIO.loadNN(file));
+                sbpNNExperiment.setNeuralNet(NeuralNetIO.loadNN(file));
+
+
 
                 boolean updateUITemp = updateUI;
                 updateUI = true;
@@ -168,7 +181,7 @@ public class NeuralNetPanel extends JPanel {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
-                NeuralNetIO.saveNN(xorProblem.getNeuralNet(), file);
+                NeuralNetIO.saveNN(sbpNNExperiment.getNeuralNet(), file);
             }
         });
         temp.add(saveNNButton);
@@ -191,7 +204,7 @@ public class NeuralNetPanel extends JPanel {
                 //System.out.println("updating graph");
                 if(!updateUI) return;
                // System.out.println("actually updating graph");
-                final NeuralNet neuralNet = new NeuralNet(xorProblem.getNeuralNet());
+                final NeuralNet neuralNet = new NeuralNet(sbpNNExperiment.getNeuralNet());
                 SwingUtilities.invokeLater(()->{
                     graph.getModel().beginUpdate();
                     try {
@@ -260,7 +273,7 @@ public class NeuralNetPanel extends JPanel {
         };
 
         updateUIRunnable.run();
-        xorProblem.setUpdateListener(updateUIRunnable);
+        sbpNNExperiment.setUpdateListener(updateUIRunnable);
         mxGraphComponent graphComponent = new mxGraphComponent(graph);
         add(graphComponent,BorderLayout.CENTER);
 
@@ -269,31 +282,50 @@ public class NeuralNetPanel extends JPanel {
         JPanel southPanel = new JPanel();
 
         JLabel TTLabel = new JLabel("Training Tuple:");
-        JTextField TTField = new JTextField("-1,-1",20);
+        TTField = new JTextField("-1,-1",20);
         TTLabel.setLabelFor(TTField);
         southPanel.add(TTField);
         southPanel.add(TTLabel);
 
-        JLabel OutputLabel = new JLabel("Output: ");
+        OutputLabel = new JLabel("Output: ");
         southPanel.add(OutputLabel);
 
         JLabel FILLER = new JLabel("      ");
         southPanel.add(FILLER);
 
-        final JButton FFButton = new JButton("Feed It Forward");
+        FFButton = new JButton("Feed It Forward");
         FFButton.addActionListener(e -> {
             List<Double> inputs = new ArrayList<>();
             String[] ttSplit = TTField.getText().split(",");
             for(String input : ttSplit)
                 inputs.add(Double.parseDouble(input));
 
-            List<Double> outputs = xorProblem.getNeuralNet().feedForward(inputs);
+            List<Double> outputs = sbpNNExperiment.getNeuralNet().feedForward(inputs);
 
             StringBuilder sb = new StringBuilder();
-            outputs.forEach(output -> sb.append(String.format("%1.0f,",output)));
+            outputs.forEach(output -> sb.append(String.format("%1.1f,",output)));
             OutputLabel.setText("Output: " + sb.substring(0,sb.length()-1));
         });
         southPanel.add(FFButton);
+
+
+        final JButton checkNetworkError = new JButton("Check network error");
+        checkNetworkError.addActionListener(e -> {
+
+            fc.setCurrentDirectory(new File("."));
+            int returnVal = fc.showOpenDialog(NeuralNetPanel.this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+
+                List<TrainingTuple> trainingTuples = NNTrainingDataLoader.loadTrainingTuples(file);
+
+                double networkError = sbpNNExperiment.calcNetworkError(trainingTuples);
+
+                OutputLabel.setText("Network Error: " + networkError );
+            }
+        });
+        southPanel.add(checkNetworkError);
+
 
         FILLER = new JLabel("          ");
         southPanel.add(FILLER);
@@ -305,8 +337,25 @@ public class NeuralNetPanel extends JPanel {
         final JButton run = new JButton("Run (The NN above)");
         run.addActionListener(e -> new Thread(()->{
             run.setEnabled(false);
+
+            sbpNNExperiment.setEpochs(getEpochs());
+            sbpNNExperiment.setTrainingIterations(getTrainingIterations());
+            sbpNNExperiment.setA(getA());
+            sbpNNExperiment.setB(getB());
+            sbpNNExperiment.setAlpha(getAlpha());
+
+
+            fc.setCurrentDirectory(new File("."));
+            int returnVal = fc.showOpenDialog(NeuralNetPanel.this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+
+                List<TrainingTuple> trainingTuples = NNTrainingDataLoader.loadTrainingTuples(file);
+                sbpNNExperiment.setTrainingTuples(trainingTuples);
+            }
+
             System.out.println("Running Experiment!");
-            final SBPResults runResults = xorProblem.run();
+            final SBPResults runResults = sbpNNExperiment.run();
 
             double error = runResults.networkError;
             System.out.println("Experiment over!");
@@ -356,5 +405,37 @@ public class NeuralNetPanel extends JPanel {
         add(southPanel, BorderLayout.SOUTH);
 
 
+    }
+
+    public int getEpochs() {
+        return Integer.parseInt(EpochTextBox.getText());
+    }
+
+    public int getTrainingIterations() {
+        return Integer.parseInt(TrainingItsTextBox.getText());
+    }
+
+    public double getA() {
+        return Double.parseDouble(ATextBox.getText());
+    }
+
+    public double getB() {
+        return Double.parseDouble(BTextBox.getText());
+    }
+    public double getAlpha() {
+        return Double.parseDouble(AlphaTextBox.getText());
+    }
+
+
+    public JTextField getTTField() {
+        return TTField;
+    }
+
+    public JButton getFFButton() {
+        return FFButton;
+    }
+
+    public JLabel getOutputLabel() {
+        return OutputLabel;
     }
 }

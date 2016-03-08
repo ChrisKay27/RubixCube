@@ -4,12 +4,9 @@ import neuralnet.*;
 import sbp.SBP;
 import sbp.SBP.SBPResults;
 import sbp.SBPParams;
+import sbp.SBPNNExperiment;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -17,7 +14,8 @@ import java.util.function.Function;
  *
  * Created by Chris on 2/9/2016.
  */
-public class NNRubixCube {
+public class NNRubixCube implements SBPNNExperiment {
+
     private static List<TrainingTuple> trainingTuples;
     private double A = 1.716;//1;// 1.716;
     private double B = 0.667;//1;// 0.667;
@@ -72,6 +70,7 @@ public class NNRubixCube {
 
 
     public SBPResults run() {
+
         SBPParams sbpParams = new SBPParams();
         sbpParams.setN(N);
         sbpParams.setDeriv_sigmoid(deriv_sigmoid);
@@ -104,33 +103,7 @@ public class NNRubixCube {
 
 
     static{
-        trainingTuples = new ArrayList<>();
-
-        File f = new File("trainingData.txt");
-
-        try(BufferedReader br = new BufferedReader(new FileReader(f))){
-
-            String tupleStr = br.readLine();
-
-            String[] tupleSplit = tupleStr.split("\\|");
-
-            String[] inputsSplit = tupleSplit[0].split(",");
-            List<Double> inputs = new ArrayList<>();
-            for(String inputStr : inputsSplit )
-                inputs.add(Double.parseDouble(inputStr));
-
-
-            List<Double> outputs = new ArrayList<>();
-            String[] ouputsSplit = tupleSplit[1].split(",");
-            for(String outputStr : ouputsSplit )
-                outputs.add(Double.parseDouble(outputStr));
-
-            System.out.println("input size " + inputs.size() + " outputs size: " + outputs.size());
-            trainingTuples.add(new TrainingTuple(inputs,outputs));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        trainingTuples = NNTrainingDataLoader.loadTrainingTuples( new File("trainingData.txt"));
     }
 
     /**
@@ -141,5 +114,34 @@ public class NNRubixCube {
 
         //Lambda functions don't serialize well...
         neuralNet.getNNParams().setSigmoid(sigmoid);
+    }
+
+    public void setEpochs(int epochs) {
+        this.epochs = epochs;
+    }
+
+    public void setTrainingIterations(int trainingIterations) {
+        this.trainingIterations = trainingIterations;
+    }
+
+    public void setA(double a) {
+        this.A = a;
+    }
+
+    public void setB(double b) {
+        this.B = b;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    @Override
+    public double calcNetworkError(List<TrainingTuple> trainingTupleList) {
+        return SBP.calculateNetworkError(neuralNet,trainingTupleList);
+    }
+
+    public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
+        NNRubixCube.trainingTuples = trainingTuples;
     }
 }

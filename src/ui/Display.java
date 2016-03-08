@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 public class Display {
     private static final boolean autoRestartProgramAfterCompletion = false;
     private static final boolean autoStartExperiment = false;
+    private final NeuralNetPanel nnPanel;
 
     private boolean showCubeStatesDuringSearch = false;
 
@@ -50,7 +51,8 @@ public class Display {
 
         JFrame window = new JFrame("Rubix");
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Neural Net",new NeuralNetPanel());
+        nnPanel = new NeuralNetPanel();
+        tabbedPane.add("Neural Net",nnPanel);
 
         //Setup menu bar
         JMenuBar menuBar = new JMenuBar();
@@ -65,6 +67,13 @@ public class Display {
         NNexperimentMenu.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
         experimentMenu.add(NNexperimentMenu);
         menuBar.add(experimentMenu);
+
+
+        JMenu utilMenu = new JMenu("Util");
+        JMenuItem cubeNNInterface = new JMenuItem("Cube NN Interface",'e');
+        cubeNNInterface.addActionListener(e -> new CubeNNInterface(Display.this));
+        utilMenu.add(cubeNNInterface);
+        menuBar.add(utilMenu);
 
         window.setJMenuBar(menuBar);
 
@@ -434,5 +443,9 @@ public class Display {
 
     public RubixCube getDisplayedCube() {
         return cubePanel.getCube();
+    }
+
+    public NeuralNetPanel getNnPanel() {
+        return nnPanel;
     }
 }

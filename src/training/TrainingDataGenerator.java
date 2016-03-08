@@ -110,6 +110,19 @@ public class TrainingDataGenerator {
     }
 
 
+    public static String getCubeStateTT(String cubeState){
+        String encodedCubeState = cubeState.replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", "").replace("Cube;Front:", "").replace("Right:", "").replace("Back:", "").replace("Left:", "").replace("Top:", "").replace("Bottom:", "");
+        //System.out.println(cubeState);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < encodedCubeState.length(); i++) {
+            sb.append(getColorEncoding(encodedCubeState.charAt(i)));
+        }
+        encodedCubeState = sb.toString();
+        encodedCubeState = encodedCubeState.substring(0, encodedCubeState.length() - 1);
+        return encodedCubeState;
+    }
 
 
     private List<String> encodeCubeStateAndMoves(HashMap<String, String> stateToMove) {
@@ -118,16 +131,8 @@ public class TrainingDataGenerator {
             try {
                 String move = stateToMove.get(cubeState);
                 //System.out.println(cubeState);
-                String encodedCubeState = cubeState.replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", "").replace("Cube;Front:", "").replace("Right:", "").replace("Back:", "").replace("Left:", "").replace("Top:", "").replace("Bottom:", "");
-                //System.out.println(cubeState);
 
-                StringBuilder sb = new StringBuilder();
-
-                for (int i = 0; i < encodedCubeState.length(); i++) {
-                    sb.append(getColorEncoding(encodedCubeState.charAt(i)));
-                }
-                encodedCubeState = sb.toString();
-                encodedCubeState = encodedCubeState.substring(0, encodedCubeState.length() - 1);
+                String encodedCubeState = getCubeStateTT(cubeState);
 
 
                 String[] moveSplit = move.split(":");
@@ -195,6 +200,18 @@ public class TrainingDataGenerator {
     }
 
     /**
+     *
+     */
+    public static int getColOrRowdecoding(String colOrRowStr) {
+//        System.out.println("Col or row : "+ colOrRowStr );
+        colOrRowStr = colOrRowStr.replaceAll("-1","0");
+        colOrRowStr = colOrRowStr.replaceAll(",","");
+//        System.out.println("Col or row output : " + colOrRowStr.indexOf("1"));
+        return colOrRowStr.indexOf("1");
+    }
+
+
+    /**
      * cw = 1,
      * ccw = -1,
      */
@@ -205,6 +222,19 @@ public class TrainingDataGenerator {
         }
         throw new WTFException("Input "+s+" has to be either Row EW or NS");
     }
+
+    /**
+     * cw = 1,
+     * ccw = -1,
+     */
+    public static String getDirdecoding(String s) {
+        switch (s){
+            case "1,"  : return "cw";
+            case  "-1,": return "ccw";
+        }
+        throw new WTFException("Input "+s+" has to be either 1 or -1");
+    }
+
 
     /**
      * Row = -1,-1,1,
@@ -218,6 +248,17 @@ public class TrainingDataGenerator {
             case "EW": return  "1,-1,-1,";
         }
         throw new WTFException("Input "+s+" has to be either Row EW or NS");
+    }
+
+    public static String decodeSlice(String encodedSlice){
+        switch (encodedSlice){
+            case "-1,-1,1," : return "Row" ;
+            case "-1,1,-1,": return "NS" ;
+            case "1,-1,-1,": return "EW" ;
+        }
+        throw new WTFException("Input "+encodedSlice+" has to be either -1,-1,1, or " +
+                "-1,1,-1, or " +
+                "1,-1,-1,");
     }
 
 

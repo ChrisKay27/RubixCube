@@ -114,8 +114,12 @@ public class NeuralNet implements SBPImpl, Serializable {
     }
 
     public List<Double> feedForward(List<Double> input){
-        //hidden layers
+        for (int i = 0; i < inputNeurons.size(); i++) {
+            inputNeurons.get(i).setAct(input.get(i));
+            inputNeurons.get(i).setNet(input.get(i));
+        }
 
+        //hidden layers
 
         hiddenLayers.forEach(hiddenNeurons -> {
                     for (int h = 0; h < hiddenNeurons.size(); h++) {
@@ -123,10 +127,12 @@ public class NeuralNet implements SBPImpl, Serializable {
                         List<Edge> hiddenInputEdges = hiddenNeuron.getInputEdges();
 
                         double net = 0;
-                        for (int i = 0; i < input.size(); i++)
-                            net += input.get(i) * hiddenInputEdges.get(i).getWeight();
-                        if (params.usingBiasNeuron())
-                            net += hiddenInputEdges.get(input.size()).getWeight() * bias.getNet();
+
+                        for (Edge hiddenInputEdge : hiddenInputEdges)
+                            net += hiddenInputEdge.getWeight() * hiddenInputEdge.getSource().getAct();
+
+//                        if (params.usingBiasNeuron())
+//                            net += hiddenInputEdges.get(input.size()).getWeight() * bias.getNet();
                         hiddenNeuron.setNet(net);
                         hiddenNeuron.setAct(params.getSigmoid().apply(net));
                     }
@@ -149,6 +155,10 @@ public class NeuralNet implements SBPImpl, Serializable {
 
             double act = params.getSigmoid().apply(net);
             outputNeuron.setAct(act);
+            if( act > 1 )
+                act = 1;
+            else if( act < -1 )
+                act = -1;
             outputs.add(act);
         }
 

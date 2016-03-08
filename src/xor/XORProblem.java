@@ -1,9 +1,13 @@
 package xor;
 
-import neuralnet.*;
+import neuralnet.NNExperimentParams;
+import neuralnet.NeuralNet;
+import neuralnet.NeuralNetParams;
+import neuralnet.TrainingTuple;
 import sbp.SBP;
 import sbp.SBP.SBPResults;
 import sbp.SBPParams;
+import sbp.SBPNNExperiment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +18,7 @@ import java.util.function.Function;
  *
  * Created by Chris on 2/9/2016.
  */
-public class XORProblem {
+public class XORProblem implements SBPNNExperiment {
     private static List<TrainingTuple> trainingTuples;
     private double A = 1.716;//1;// 1.716;
     private double B = 0.667;//1;// 0.667;
@@ -136,5 +140,15 @@ public class XORProblem {
 
         //Lambda functions don't serialize well...
         neuralNet.getNNParams().setSigmoid(sigmoid);
+    }
+
+    @Override
+    public double calcNetworkError(List<TrainingTuple> trainingTupleList) {
+        return SBP.calculateNetworkError(neuralNet,trainingTupleList);
+    }
+
+    @Override
+    public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
+
     }
 }
