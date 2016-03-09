@@ -63,7 +63,7 @@ public class Display {
         experimentMenu.add(experimentMenuItem);
 
 
-        JMenuItem NNexperimentMenu = new JMenuItem("NN Experiment",'n');
+        JMenuItem NNexperimentMenu = new JMenuItem("NN Heat Map Experiment",'n');
         NNexperimentMenu.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
         experimentMenu.add(NNexperimentMenu);
         menuBar.add(experimentMenu);
@@ -308,9 +308,11 @@ public class Display {
 
     private void runExperiment(ExperimentParameters expParams){
 
+
         Thread t = new Thread(){
             @Override
             public void run() {
+
 
                 expParams.setPathTracer(getPathTracer());
                 expParams.setTooManyStatesListener(()->{

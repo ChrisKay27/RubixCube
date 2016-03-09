@@ -2,7 +2,8 @@ package ui;
 
 import neuralnet.NNExperimentParams;
 import sbp.SBP.SBPResults;
-import xor.XORProblem;
+
+import sbp.SBPNNExperiment;
 import xor.XORResultsWriter;
 
 import javax.swing.*;
@@ -135,10 +136,10 @@ public class NNExperimentPopupWindow extends JFrame {
 
                             nnExpParams.setN(learningRate);
                             nnExpParams.setAlpha(alpha);
-                            XORProblem xorProblem = new XORProblem(nnExpParams);
-                            xorProblem.init();
+                            SBPNNExperiment sbpnnExperiment = new SBPNNExperiment(nnExpParams);
+                            sbpnnExperiment.init();
 
-                            final SBPResults runResults = xorProblem.run();
+                            final SBPResults runResults = sbpnnExperiment.run();
                             double error = runResults.networkError;
 
                             results.get(learningRate+"").get(alpha+"").add(error);
@@ -189,10 +190,10 @@ public class NNExperimentPopupWindow extends JFrame {
 
                             nnExpParams.setN(learningRate);
                             nnExpParams.setTrainingIterationsPerEpoch(trainingIters);
-                            XORProblem xorProblem = new XORProblem(nnExpParams);
-                            xorProblem.init();
+                            SBPNNExperiment sbpnnExperiment = new SBPNNExperiment(nnExpParams);
+                            sbpnnExperiment.init();
 
-                            final SBPResults runResults = xorProblem.run();
+                            final SBPResults runResults = sbpnnExperiment.run();
                             double error = runResults.networkError;
 
                             results.get(learningRate + "").get(trainingIters + "").add(error);
@@ -240,10 +241,10 @@ public class NNExperimentPopupWindow extends JFrame {
 
                             nnExpParams.setTrainingIterationsPerEpoch(trainingIters);
                             nnExpParams.setAlpha(alpha);
-                            XORProblem xorProblem = new XORProblem(nnExpParams);
-                            xorProblem.init();
+                            SBPNNExperiment sbpnnExperiment = new SBPNNExperiment(nnExpParams);
+                            sbpnnExperiment.init();
 
-                            final SBPResults runResults = xorProblem.run();
+                            final SBPResults runResults = sbpnnExperiment.run();
                             double error = runResults.networkError;
 
                             results.get(alpha + "").get(trainingIters + "").add(error);

@@ -131,8 +131,6 @@ public class NeuralNet implements SBPImpl, Serializable {
                         for (Edge hiddenInputEdge : hiddenInputEdges)
                             net += hiddenInputEdge.getWeight() * hiddenInputEdge.getSource().getAct();
 
-//                        if (params.usingBiasNeuron())
-//                            net += hiddenInputEdges.get(input.size()).getWeight() * bias.getNet();
                         hiddenNeuron.setNet(net);
                         hiddenNeuron.setAct(params.getSigmoid().apply(net));
                     }
@@ -155,10 +153,6 @@ public class NeuralNet implements SBPImpl, Serializable {
 
             double act = params.getSigmoid().apply(net);
             outputNeuron.setAct(act);
-            if( act > 1 )
-                act = 1;
-            else if( act < -1 )
-                act = -1;
             outputs.add(act);
         }
 

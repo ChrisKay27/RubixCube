@@ -14,9 +14,16 @@ import java.util.List;
  */
 public class ExperimentPopupWindow extends JFrame {
 
+
+
     public ExperimentPopupWindow(Display display) {
 
         JPanel contentPane = new JPanel();
+
+        JLabel numberOfRunsLabel = new JLabel("Number of Runs");
+        JTextField numberOfRunsField = new JTextField("10",15);
+        numberOfRunsLabel.setLabelFor(numberOfRunsField);
+
         JLabel cubeSizeLabel = new JLabel("Cube Size:");
         JTextField cubeSizeField = new JTextField("3",15);
 
@@ -41,43 +48,47 @@ public class ExperimentPopupWindow extends JFrame {
             Thread t = new Thread() {
                 @Override
                 public void run() {
+                    int numberOfRuns = Integer.parseInt(numberOfRunsField.getText());
 
                     int cubeSize = Integer.parseInt(cubeSizeField.getText());
                     int giveUpAfter = Integer.parseInt(giveUpAfterStatesField.getText());
                     int moves = Integer.parseInt(movesField.getText());
 
+                    System.out.println("number of runs=" + numberOfRuns);
+                    for (int i = 0; i < numberOfRuns; i++) {
+                        System.out.println("run # " + i );
+                        ExperimentParameters expParams = new ExperimentParameters((Searches) searches.getSelectedItem(), cubeSize, giveUpAfter, moves);
 
-                    ExperimentParameters expParams = new ExperimentParameters((Searches) searches.getSelectedItem(), cubeSize, giveUpAfter, moves);
-
-                    if( useCurrentCube.isSelected() )
-                        expParams.setStartState(display.getDisplayedCube());
-
-
-
-                    expParams.setPathTracer(display.getPathTracer());
-                    expParams.setTooManyStatesListener(() -> {
-                        Display.restartProgram();
-                        System.exit(0);
-                    });
-
-                    RubixCubeExperiment exp = new RubixCubeExperiment(expParams);
-
-                    display.setSearchDiagnostic(exp.getSearchDiagnostic());
-                    display.setExperiment(exp);
+                        if( useCurrentCube.isSelected() )
+                            expParams.setStartState(display.getDisplayedCube());
 
 
-                    System.out.println("Beginning RubixCubeExperiment!");
-                    List<Tuple> resultTuples = exp.runExperiment();
 
-                    if( resultTuples != null ) {
-                        ExperimentResultsWriter.writeResultsToFile("results", cubeSize, resultTuples);
+                        expParams.setPathTracer(display.getPathTracer());
+                        expParams.setTooManyStatesListener(() -> {
+                            Display.restartProgram();
+                            System.exit(0);
+                        });
 
-                        new ExperimentCompletePopupWindow(resultTuples.size());
+                        RubixCubeExperiment exp = new RubixCubeExperiment(expParams);
 
-                        display.updateResultsPanel(resultTuples);
+                        display.setSearchDiagnostic(exp.getSearchDiagnostic());
+                        display.setExperiment(exp);
+
+
+                        System.out.println("Beginning RubixCubeExperiment!");
+                        List<Tuple> resultTuples = exp.runExperiment();
+
+                        if( resultTuples != null ) {
+                            ExperimentResultsWriter.writeResultsToFile("results", cubeSize, resultTuples);
+
+//                            new ExperimentCompletePopupWindow(resultTuples.size());
+
+                            display.updateResultsPanel(resultTuples);
+                        }
+
+                        display.possiblyStartAnotherRun();
                     }
-
-                    display.possiblyStartAnotherRun();
                 }
             };
             t.setDaemon(true);
@@ -85,6 +96,9 @@ public class ExperimentPopupWindow extends JFrame {
             ExperimentPopupWindow.this.dispose();
         });
 
+
+        contentPane.add(numberOfRunsLabel);
+        contentPane.add(numberOfRunsField);
         contentPane.add(cubeSizeLabel);
         contentPane.add(cubeSizeField);
         contentPane.add(movesLabel);

@@ -2,6 +2,7 @@ package sbp;
 
 import neuralnet.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,15 @@ import java.util.function.Function;
  */
 public class SBP {
 
-    public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
-//        System.out.println("Number training tuples: " + trainingTuples.size());
+    public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuplesMasterList){
+
+        //Take a sub set of the training tuples (network doesn't perform well with 30000 training tuples)
+        List<TrainingTuple> trainingTuples = new ArrayList<>();
+        trainingTuples.clear();
+        for (int i = 0; i < 5000; i++)
+            trainingTuples.add(trainingTuplesMasterList.remove((int)(Math.random()*trainingTuplesMasterList.size())));
+        trainingTuplesMasterList.addAll(trainingTuples);
+
 
         //local to keep track of the best network so far
         SBPImpl currentBest = sbpImpl.copy();
@@ -23,9 +31,11 @@ public class SBP {
         Function<Double,Double> deriv_sigmoid = params.getDeriv_sigmoid();
         Runnable sbpListener = params.getSBPListener();
 
+        Map<Neuron,Double> deltas = new HashMap<>();
 
         for (int epoc = 0; epoc < params.getEpocs(); epoc++) {
-            Map<Neuron,Double> deltas = new HashMap<>();
+
+            deltas.clear();
 
             for (int i = 0; i < params.getTrainingIterations(); i++) {
                 deltas.clear();
@@ -68,11 +78,12 @@ public class SBP {
 
                         List<Edge> inputEdges = hidden.getInputEdges();
 
+                        double weightDecay = params.getWeightDecay();
                         for (int in = 0; in < inputEdges.size(); in++) {
                             Edge inputEdge = inputEdges.get(in);
                             double deltaJI = deltaJi(deltaJ, inputEdge.getSource().getAct(),N);
 
-                            inputEdge.setDeltaWeight(deltaJI);
+                            inputEdge.setDeltaWeight(deltaJI - deltaJI*weightDecay*N);
                         }
                     }
                 }
@@ -81,27 +92,36 @@ public class SBP {
                 sbpImpl.getOutputNeurons().forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha())));
                 hiddenLayers.forEach(hiddenNeurons->hiddenNeurons.forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha()))));
 
-                //Calc network error
-                double networkError = calculateNetworkError(sbpImpl, trainingTuples);
-                sbpImpl.setNetworkError(networkError);
-
                 //Something likes to listen to the SBP algorithm I guess
                 if(sbpListener != null)
                     sbpListener.run();
 
+
+                //Calc network error
+                double networkError = calculateNetworkError(sbpImpl, trainingTuples, sbpImpl.getNetworkError());
+                sbpImpl.setNetworkError(networkError);
+
+
                 //Keep track of the best NN
                 if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ){
-                    System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
-                    currentBest = sbpImpl.copy();
+
+                    if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ) {
+                        System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
+                        currentBest = sbpImpl.copy();
+                    }
                 }
 
                 //If the network error is below a desired amount then just return
                 if( networkError < params.getDesiredErrorRate() || params.stopFlag() ){
+
                     sbpImpl = currentBest;
                     SBPResults sbpResults = new SBPResults(((epoc)*params.getTrainingIterations())+(i+1),epoc+1,currentBest.getNetworkError(),currentBest);
 
                     return sbpResults;
                 }
+
+                if( i % 100 == 0)
+                    System.out.println("Done iteration " + i);
             }
 
             System.out.println("Epoch " + epoc + " over, error: " + currentBest.getNetworkError());
@@ -143,16 +163,16 @@ public class SBP {
     }
 
 
-    public static double calculateNetworkError(SBPImpl sbpImpl, List<TrainingTuple> trainingTuples){
+
+    public static double calculateNetworkError(SBPImpl sbpImpl, List<TrainingTuple> trainingTuples, double previousNetworkError){
 //        System.out.println("Number training tuples: " + trainingTuples.size());
+
         double networkError = 0;
         for (TrainingTuple TT : trainingTuples){
 
             List<Double> expectOutputs = TT.getExpectedOutputs();
             List<Double> actOutput = sbpImpl.feedForward(TT.getInputs());
 
-//            System.out.println("Expected output: " + expectOutputs);
-//            System.out.println("Actual output: " + actOutput);
             double vectorDistance = 0;
             for (int outputs = 0; outputs < expectOutputs.size(); outputs++) {
                 vectorDistance += Math.pow(expectOutputs.get(outputs) - actOutput.get(outputs), 2);
@@ -160,6 +180,9 @@ public class SBP {
             }
             vectorDistance /= 2;
             networkError += vectorDistance;
+
+            if( networkError > previousNetworkError )
+                return networkError;
         }
         return networkError;
     }

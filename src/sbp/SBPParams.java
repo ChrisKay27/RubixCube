@@ -12,6 +12,7 @@ public class SBPParams {
     private Runnable SBPListener;
     private double desiredErrorRate;
     private double alpha;
+    private double weightDecay;
     private int epocs;
     private int trainingIterations;
     private boolean stopFlag;
@@ -81,5 +82,13 @@ public class SBPParams {
 
     public void setStopFlag(boolean stopFlag) {
         this.stopFlag = stopFlag;
+    }
+
+    public double getWeightDecay() {
+        return weightDecay;
+    }
+
+    public void setWeightDecay(double weightDecay) {
+        this.weightDecay = weightDecay;
     }
 }

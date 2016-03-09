@@ -1,10 +1,11 @@
 package ui;
 
-import NNRubixCube.NNRubixCube;
+
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import neuralnet.*;
 import sbp.SBP.SBPResults;
+import sbp.SBPNNExperiment;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,23 +30,28 @@ public class NeuralNetPanel extends JPanel {
     private final JTextField TrainingItsTextBox;
     private final JTextField EpochTextBox;
     private final JTextField ATextBox;
-    private final JTextField TTField;
-    private final JButton FFButton;
-    private final JLabel OutputLabel;
+    private final JTextField weightDecayTextBox;
+    private JTextField TTField;
+    private JButton FFButton;
+    private JLabel OutputLabel;
+
+    private final JFileChooser fc;
 
     private boolean updateUI = true;
     private int sleepTime = 100;
-    private NNRubixCube sbpNNExperiment = new NNRubixCube(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
+    private SBPNNExperiment sbpNNExperiment = new SBPNNExperiment(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
 
     private Runnable updateUIRunnable;
 
+    private boolean drawEdges = true;
 
 
     public NeuralNetPanel() {
         super(new BorderLayout());
         sbpNNExperiment.init();
 
-        JPanel northPanel = new JPanel(new GridLayout(2,10));
+        JPanel northPanel = new JPanel(new GridLayout(2,11));
+        northPanel.setMinimumSize(new Dimension(200,300));
 
 
         JPanel temp = new JPanel();
@@ -81,6 +87,14 @@ public class NeuralNetPanel extends JPanel {
         northPanel.add(temp);
 
         temp = new JPanel();
+        JLabel weightDecayLabel = new JLabel("Weight Decay:");
+        weightDecayTextBox = new JTextField("0.01",5);
+        alphaLabel.setLabelFor(weightDecayTextBox);
+        temp.add(weightDecayLabel);
+        temp.add(weightDecayTextBox);
+        northPanel.add(temp);
+
+        temp = new JPanel();
         JLabel TrainingItsLabel = new JLabel("Training Iterations:");
         TrainingItsTextBox = new JTextField("1000",10);
         TrainingItsLabel.setLabelFor(TrainingItsTextBox);
@@ -105,7 +119,8 @@ public class NeuralNetPanel extends JPanel {
         northPanel.add(temp);
 
         temp = new JPanel();
-        JLabel HidNeuronsPerLayerLabel = new JLabel("Hidden Neurons Per Layer ('2-3' if you want a 2-2-3-1 NN):");
+        temp.setPreferredSize(new Dimension(300,70));
+        JLabel HidNeuronsPerLayerLabel = new JLabel("<html>Hidden Neurons Per Layer<br> ('2-3' if you want a 2-2-3-1 NN):<html>");
         JTextField HidNeuronsPerLayerTextBox = new JTextField("2",10);
         HidNeuronsPerLayerLabel.setLabelFor(HidNeuronsPerLayerTextBox);
         temp.add(HidNeuronsPerLayerLabel);
@@ -131,6 +146,7 @@ public class NeuralNetPanel extends JPanel {
             int epochs = Integer.parseInt(EpochTextBox.getText());
             double desiredErrorRate = Double.parseDouble(ErrorRateTextBox.getText());
             double alpha = Double.parseDouble(AlphaTextBox.getText());
+            double weightDecay = Double.parseDouble(weightDecayTextBox.getText());
 
 
             String[] hNeuronsSpl = HidNeuronsPerLayerTextBox.getText().split("-");
@@ -140,7 +156,10 @@ public class NeuralNetPanel extends JPanel {
                 hNeurons[i] = Integer.parseInt(num);
             }
 
-            sbpNNExperiment = new NNRubixCube(new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons));
+
+            NNExperimentParams params = new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons);
+            params.setWeightDecay(weightDecay);
+            sbpNNExperiment = new SBPNNExperiment(params);
             sbpNNExperiment.setUpdateListener(updateUIRunnable);
             sbpNNExperiment.init();
 
@@ -153,7 +172,7 @@ public class NeuralNetPanel extends JPanel {
         northPanel.add(temp);
 
         temp = new JPanel();
-        JFileChooser fc = new JFileChooser();
+        fc = new JFileChooser();
         fc.setCurrentDirectory(new File("."));
         final JButton loadNNButton = new JButton("Load NN");
         loadNNButton.addActionListener(e -> {
@@ -245,13 +264,14 @@ public class NeuralNetPanel extends JPanel {
                         neurGraph.put(neuralNet.getBiasNeuron(), graphObject);
 
 
-                        for (Neuron n : neurGraph.keySet()) {
-                            if (n.getOutputEdges() != null)
-                                for (Edge e : n.getOutputEdges()) {
-                                    graphObject = graph.insertEdge(parent, null, e, neurGraph.get(e.getSource()), neurGraph.get(e.getDest()));
-                                    graphObjects.add(graphObject);
-                                }
-                        }
+                        if( drawEdges )
+                            for (Neuron n : neurGraph.keySet()) {
+                                if (n.getOutputEdges() != null)
+                                    for (Edge e : n.getOutputEdges()) {
+                                        graphObject = graph.insertEdge(parent, null, e, neurGraph.get(e.getSource()), neurGraph.get(e.getDest()));
+                                        graphObjects.add(graphObject);
+                                    }
+                            }
 
 
                         graph.refresh();
@@ -278,7 +298,31 @@ public class NeuralNetPanel extends JPanel {
         add(graphComponent,BorderLayout.CENTER);
 
 
+        initWestPanel();
+        initSouthPanel();
+    }
 
+
+
+    private void initWestPanel() {
+        JPanel westPanel = new JPanel();
+
+        JCheckBox drawEdgesCheckBox = new JCheckBox("Draw Edges");
+        drawEdgesCheckBox.setSelected(true);
+        drawEdgesCheckBox.addActionListener(e->{
+            drawEdges = !drawEdges;
+            boolean prevUpdateUI = updateUI;
+            updateUI = true;
+            updateUIRunnable.run();
+            updateUI = prevUpdateUI;
+        });
+        westPanel.add(drawEdgesCheckBox);
+
+
+        add(westPanel,BorderLayout.WEST);
+    }
+
+    private void initSouthPanel() {
         JPanel southPanel = new JPanel();
 
         JLabel TTLabel = new JLabel("Training Tuple:");
@@ -334,6 +378,7 @@ public class NeuralNetPanel extends JPanel {
         JCheckBox updateUICheckbox = new JCheckBox("Update UI");
 
         final JButton stopButton = new JButton("Stop");
+
         final JButton run = new JButton("Run (The NN above)");
         run.addActionListener(e -> new Thread(()->{
             stopButton.setEnabled(true);
@@ -353,21 +398,37 @@ public class NeuralNetPanel extends JPanel {
 
                 List<TrainingTuple> trainingTuples = NNTrainingDataLoader.loadTrainingTuples(file);
                 sbpNNExperiment.setTrainingTuples(trainingTuples);
+
+
                 System.out.println("Running Experiment!");
                 final SBPResults runResults = sbpNNExperiment.run();
+
 
                 double error = runResults.networkError;
                 System.out.println("Experiment over!");
                 System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
 
-                updateUI = true;
-                updateUIRunnable.run();
 
-                updateUICheckbox.setSelected(true);
+                SwingUtilities.invokeLater(()->{
+                    updateUI = true;
+                    updateUIRunnable.run();
+
+                    updateUICheckbox.setSelected(true);
+
+
+                    JFrame results = new JFrame();
+                    JPanel content = new JPanel();
+                    results.setContentPane(content);
+                    content.add(new JLabel("Experiment over, Resulting network error: " + error));
+                    results.setLocationRelativeTo(NeuralNetPanel.this);
+                    results.setSize(300,200);
+                    results.setVisible(true);
+                });
             }
 
             run.setEnabled(true);
             stopButton.setEnabled(false);
+
         }).start());
         southPanel.add(run);
 
@@ -412,8 +473,6 @@ public class NeuralNetPanel extends JPanel {
         southPanel.add(infoLabel);
 
         add(southPanel, BorderLayout.SOUTH);
-
-
     }
 
     public int getEpochs() {
