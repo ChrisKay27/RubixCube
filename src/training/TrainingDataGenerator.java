@@ -41,7 +41,7 @@ public class TrainingDataGenerator {
 
         writeEncodedCubeStatesAndMovesToFile(encodedCubeStatesAndMoves);
 
-        System.out.println("Wrote " + encodedCubeStatesAndMoves.size() + " lines to results/trainingData.txt");
+        System.out.println("Wrote " + encodedCubeStatesAndMoves.size() + " lines to " + outputFilePath);
     }
 
 
@@ -50,33 +50,24 @@ public class TrainingDataGenerator {
 
         File inputFolder = new File(inputFolderPath);
         if(!inputFolder.exists()) {
-            System.err.println("Results folder doesn't exist in the folder of the jar! Try running experiments first.");
-            System.exit(69);
-        }
+//            System.exit(69);
+            throw new WTFException("Results folder doesn't exist in the folder of the jar! Try running experiments first.");
+        };
 
         File[] resultFiles = inputFolder.listFiles();
         if(resultFiles == null ) {
-            System.err.println("No results files to load! (on path: " + inputFolderPath);
-            System.exit(666);
+            throw new WTFException("No results files to load! (on path: " + inputFolderPath);
         }
 
         HashMap<String, String> stateToMove = new HashMap<>();
 
         ArrayList<String> lines = new ArrayList<>();
 
-        String size = null;
+
         for (File resultFile : resultFiles) {
 
-            if (!resultFile.getName().endsWith(".txt") || resultFile.getName().equals("trainingData.txt"))
+            if (!resultFile.getName().endsWith(".txt") || !resultFile.getName().startsWith(cubeSize+"x") || resultFile.getName().equals("trainingData.txt"))
                 continue;
-
-            if( size != null ){
-                if( !resultFile.getName().startsWith(size) )
-                    continue;
-            }
-            else{
-                size = resultFile.getName().charAt(0)+"";
-            }
 
 
             try (BufferedReader br = new BufferedReader(new FileReader(resultFile))) {

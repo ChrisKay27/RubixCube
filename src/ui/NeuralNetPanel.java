@@ -135,6 +135,8 @@ public class NeuralNetPanel extends JPanel {
         temp.add(ErrorRateTextBox);
         northPanel.add(temp);
 
+        JLabel infoLabel = new JLabel("Status: Not started");
+
         temp = new JPanel();
         final JButton createNNButton = new JButton("Create NN");
         createNNButton.addActionListener(e -> {
@@ -160,7 +162,7 @@ public class NeuralNetPanel extends JPanel {
             NNExperimentParams params = new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons);
             params.setWeightDecay(weightDecay);
             sbpNNExperiment = new SBPNNExperiment(params);
-            sbpNNExperiment.setUpdateListener(updateUIRunnable);
+            sbpNNExperiment.setUpdateListener(sbpState -> updateUIRunnable.run());
             sbpNNExperiment.init();
 
             boolean updateUITemp = updateUI;
@@ -293,7 +295,7 @@ public class NeuralNetPanel extends JPanel {
         };
 
         updateUIRunnable.run();
-        sbpNNExperiment.setUpdateListener(updateUIRunnable);
+        sbpNNExperiment.setUpdateListener(sbpState -> updateUIRunnable.run());
         mxGraphComponent graphComponent = new mxGraphComponent(graph);
         add(graphComponent,BorderLayout.CENTER);
 

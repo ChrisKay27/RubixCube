@@ -4,6 +4,7 @@ import neuralnet.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -11,7 +12,11 @@ import java.util.function.Function;
  */
 public class SBPNNExperiment {
 
+
     private List<TrainingTuple> trainingTuples;
+
+    private SBPParams sbpParams;
+
     private double A = 1.716;
     private double B = 0.667;
     private double N = 0.125;
@@ -19,11 +24,13 @@ public class SBPNNExperiment {
 
     private int epochs;
     private int trainingIterations;
+
+    private int inputs;
     private int hiddenLayers;
-    private final double desiredErrorRate;
-
     private int[] hiddenNeuronsPerLayer;
+    private int outputs;
 
+    private final double desiredErrorRate;
 
     private boolean usingBias = true;
     private NeuralNet neuralNet;
@@ -31,9 +38,8 @@ public class SBPNNExperiment {
     private Function<Double,Double> sigmoid = net -> A*Math.tanh(B*net);
     private Function<Double,Double> deriv_sigmoid = net -> A*(1-Math.pow(Math.tanh(B*net),2));
 
-    private Runnable updateListener;
-    private int inputs;
-    private SBPParams sbpParams;
+    private Consumer<SBP.SBPState> updateListener;
+
 
     public SBPNNExperiment(NNExperimentParams params) {
         A = params.getA();
@@ -44,6 +50,7 @@ public class SBPNNExperiment {
         inputs = params.getInputs();
         this.desiredErrorRate = params.getDesiredErrorRate();
         this.hiddenNeuronsPerLayer = params.getHiddenNeuronsPerLayer();
+        outputs = params.getOutputs();
         epochs = params.getEpochs();
         trainingIterations = params.getTrainingIterationsPerEpoch();
         alpha = params.getAlpha();
@@ -56,11 +63,11 @@ public class SBPNNExperiment {
         params.setInputNeurons(inputs);
         params.setNumberOfHiddenLayers(hiddenLayers);
         params.setHiddenNeuronsInLayer(hiddenNeuronsPerLayer);
-        params.setOutputNeurons(7);
+        params.setOutputNeurons(outputs);
         params.setSigmoid(sigmoid);
         neuralNet = new NeuralNet(params);
         neuralNet.init();
-        System.out.println("params.getInputNeurons() = " + params.getInputNeurons());
+//        System.out.println("params.getInputNeurons() = " + params.getInputNeurons());
     }
 
 
@@ -69,7 +76,7 @@ public class SBPNNExperiment {
         sbpParams = new SBPParams();
         sbpParams.setN(N);
         sbpParams.setDeriv_sigmoid(deriv_sigmoid);
-        sbpParams.setSBPListener(updateListener);
+        sbpParams.setSBPListener(sbpState -> updateListener.accept(sbpState));
         sbpParams.setDesiredErrorRate(desiredErrorRate);
         sbpParams.setAlpha(alpha);
         sbpParams.setEpocs(epochs);
@@ -91,7 +98,7 @@ public class SBPNNExperiment {
     }
 
 
-    public void setUpdateListener(Runnable updateListener) {
+    public void setUpdateListener(Consumer<SBP.SBPState> updateListener) {
         this.updateListener = updateListener;
     }
 

@@ -45,9 +45,9 @@ public class NeuralNet implements SBPImpl, Serializable {
 
             }
         }
-
-        for (int j = 0; j < bias.getOutputEdges().size(); j++)
-            bias.getOutputEdges().get(j).set(neuralNet.bias.getOutputEdges().get(j));
+        if( bias != null )
+            for (int j = 0; j < bias.getOutputEdges().size(); j++)
+                bias.getOutputEdges().get(j).set(neuralNet.bias.getOutputEdges().get(j));
 
         networkError = neuralNet.networkError;
     }

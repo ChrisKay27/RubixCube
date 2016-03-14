@@ -1,9 +1,13 @@
 package main;
 
+import de.javasoft.plaf.synthetica.SyntheticaBlackEyeLookAndFeel;
 import tests.NNTestMain;
 import tests.TestMain;
 import training.TrainingDataGenerator;
 import ui.Display;
+import ui.ExperimentPopupWindow;
+
+import javax.swing.*;
 
 /**
  *
@@ -25,6 +29,20 @@ public class Main {
                 System.exit(1);
             }
         }
-        Display.main(args);
+
+        SwingUtilities.invokeLater(()->{
+            try {
+                UIManager.removeAuxiliaryLookAndFeel(UIManager.getLookAndFeel());
+
+                UIManager.setLookAndFeel(new SyntheticaBlackEyeLookAndFeel());
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            Display.main(args);
+            new ExperimentPopupWindow();
+        });
+
+
     }
 }

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -13,14 +15,20 @@ import java.util.function.Function;
  */
 public class SBP {
 
+    /**
+     * If the stop flag in params is tripped the current best SBPImpl will be returned
+     */
     public static SBPResults runExperiment(SBPParams params, SBPImpl sbpImpl, List<TrainingTuple> trainingTuplesMasterList){
 
         //Take a sub set of the training tuples (network doesn't perform well with 30000 training tuples)
         List<TrainingTuple> trainingTuples = new ArrayList<>();
-        trainingTuples.clear();
-        for (int i = 0; i < 5000; i++)
-            trainingTuples.add(trainingTuplesMasterList.remove((int)(Math.random()*trainingTuplesMasterList.size())));
-        trainingTuplesMasterList.addAll(trainingTuples);
+        trainingTuples.addAll(trainingTuplesMasterList);
+//        for (int i = 0; i < 5000; i++) {
+//            if( trainingTuplesMasterList.size() > 0 )
+//                trainingTuples.add(trainingTuplesMasterList.remove((int) (Math.random() * trainingTuplesMasterList.size())));
+//            else break;
+//        }
+//        trainingTuplesMasterList.addAll(trainingTuples);
 
 
         //local to keep track of the best network so far
@@ -29,15 +37,21 @@ public class SBP {
         //locals to save having params.get~ everywhere
         double N = params.getN();
         Function<Double,Double> deriv_sigmoid = params.getDeriv_sigmoid();
-        Runnable sbpListener = params.getSBPListener();
 
+        SBPState sbpState = new SBPState();
+        Consumer<SBPState> sbpListener = params.getSBPListener();
+
+        //Used to store DeltaJs and Delta Ks
         Map<Neuron,Double> deltas = new HashMap<>();
 
         for (int epoc = 0; epoc < params.getEpocs(); epoc++) {
+            sbpState.epoch = epoc;
 
             deltas.clear();
 
             for (int i = 0; i < params.getTrainingIterations(); i++) {
+                sbpState.iteration = i;
+
                 deltas.clear();
 
                 //Apply training tuple to the SBPImpl and get the output
@@ -92,11 +106,6 @@ public class SBP {
                 sbpImpl.getOutputNeurons().forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha())));
                 hiddenLayers.forEach(hiddenNeurons->hiddenNeurons.forEach(n -> n.getInputEdges().forEach(e->e.applyDeltaWeight(params.getAlpha()))));
 
-                //Something likes to listen to the SBP algorithm I guess
-                if(sbpListener != null)
-                    sbpListener.run();
-
-
                 //Calc network error
                 double networkError = calculateNetworkError(sbpImpl, trainingTuples, sbpImpl.getNetworkError());
                 sbpImpl.setNetworkError(networkError);
@@ -104,12 +113,18 @@ public class SBP {
 
                 //Keep track of the best NN
                 if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ){
-
-                    if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ) {
-                        System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
-                        currentBest = sbpImpl.copy();
-                    }
+                    System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
+                    currentBest = sbpImpl.copy();
                 }
+//                else{
+//                    sbpImpl = currentBest.copy();
+//                }
+
+                sbpState.bestError = currentBest.getNetworkError();
+                //Something likes to listen to the SBP algorithm I guess
+                if(sbpListener != null)
+                    sbpListener.accept(sbpState);
+
 
                 //If the network error is below a desired amount then just return
                 if( networkError < params.getDesiredErrorRate() || params.stopFlag() ){
@@ -120,8 +135,8 @@ public class SBP {
                     return sbpResults;
                 }
 
-                if( i % 100 == 0)
-                    System.out.println("Done iteration " + i);
+//                if( i % 100 == 0)
+//                    System.out.println("Done iteration " + i);
             }
 
             System.out.println("Epoch " + epoc + " over, error: " + currentBest.getNetworkError());
@@ -199,5 +214,12 @@ public class SBP {
             this.networkError = networkError;
             this.sbpImpl = sbpImpl;
         }
+    }
+
+
+    public static class SBPState {
+        public int epoch;
+        public int iteration;
+        public double bestError;
     }
 }

@@ -1,5 +1,8 @@
 package sbp;
 
+import sbp.SBP.SBPState;
+
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -9,7 +12,7 @@ public class SBPParams {
 
     private double N;
     private Function<Double,Double> deriv_sigmoid;
-    private Runnable SBPListener;
+    private Consumer<SBPState> SBPListener;
     private double desiredErrorRate;
     private double alpha;
     private double weightDecay;
@@ -36,11 +39,11 @@ public class SBPParams {
     }
 
 
-    public Runnable getSBPListener() {
+    public Consumer<SBPState> getSBPListener() {
         return SBPListener;
     }
 
-    public void setSBPListener(Runnable SBPListener) {
+    public void setSBPListener(Consumer<SBPState> SBPListener) {
         this.SBPListener = SBPListener;
     }
 

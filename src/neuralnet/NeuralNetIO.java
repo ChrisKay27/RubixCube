@@ -1,5 +1,7 @@
 package neuralnet;
 
+import util.WTFException;
+
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -65,7 +67,6 @@ public class NeuralNetIO {
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 

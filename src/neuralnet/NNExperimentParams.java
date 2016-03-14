@@ -9,6 +9,7 @@ public class NNExperimentParams {
     private int trainingIterationsPerEpoch;
     private int inputs;
     private int hiddenLayers;
+    private int outputs;
     private double desiredErrorRate;
     private int[] hiddenNeuronsPerLayer;
     private double alpha;
@@ -123,5 +124,13 @@ public class NNExperimentParams {
 
     public void setWeightDecay(double weightDecay) {
         this.weightDecay = weightDecay;
+    }
+
+    public int getOutputs() {
+        return outputs;
+    }
+
+    public void setOutputs(int outputs) {
+        this.outputs = outputs;
     }
 }

@@ -1,5 +1,7 @@
 package neuralnet;
 
+import util.WTFException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -37,6 +39,9 @@ public class NNTrainingDataLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if( trainingTuples.size() == 0 )
+            throw new WTFException("Didnt load any training tuples!");
 
         return trainingTuples;
     }

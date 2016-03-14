@@ -59,7 +59,7 @@ public class Display {
 
         JMenu experimentMenu = new JMenu("Experiments");
         JMenuItem experimentMenuItem = new JMenuItem("RubixCubeExperiment",'e');
-        experimentMenuItem.addActionListener(e -> new ExperimentPopupWindow(Display.this));
+        experimentMenuItem.addActionListener(e -> new ExperimentPopupWindow());
         experimentMenu.add(experimentMenuItem);
 
 
@@ -297,6 +297,7 @@ public class Display {
         int width = gd.getDisplayMode().getWidth();
         int height = gd.getDisplayMode().getHeight();
         window.setSize(width-100,height-100);
+        window.setExtendedState(Frame.ICONIFIED);
         window.setVisible(true);
 
         if( autoStartExperiment ){
@@ -402,17 +403,7 @@ public class Display {
 
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(()->{
-            try {
-                UIManager.removeAuxiliaryLookAndFeel(UIManager.getLookAndFeel());
-
-                UIManager.setLookAndFeel(new SyntheticaBlackEyeLookAndFeel());
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-            new Display();
-        });
+        SwingUtilities.invokeLater(Display::new);
     }
 
 
