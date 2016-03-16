@@ -8,13 +8,13 @@ import javax.swing.*;
  * Created by Chris on 3/7/2016.
  */
 public class CubeNNInterface extends JFrame {
-    public CubeNNInterface(Display display) {
+    public CubeNNInterface(NeuralNetPanel nnPanel, RubixCubePanel display) {
 
         String inputs = TrainingDataGenerator.getCubeStateTT(display.getDisplayedCube().toString());
 
-        display.getNnPanel().getTTField().setText(inputs);
-        display.getNnPanel().getFFButton().doClick();
-        String output = display.getNnPanel().getOutputLabel().getText().replace("Output: ", "");
+        nnPanel.getTTField().setText(inputs);
+        nnPanel.getFFButton().doClick();
+        String output = nnPanel.getOutputLabel().getText().replace("Output: ", "");
         System.out.println("output: " + output);
         output = output.replaceAll("2","1");
 //        output = output.replaceAll("-1","0");

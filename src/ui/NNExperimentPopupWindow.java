@@ -31,7 +31,7 @@ public class NNExperimentPopupWindow extends JFrame {
     private final JTextField TrainingItsIncTextBox;
 
 
-    public NNExperimentPopupWindow(Display display) {
+    public NNExperimentPopupWindow() {
         JPanel contentPane = new JPanel();
         JPanel temp;
         JLabel label;

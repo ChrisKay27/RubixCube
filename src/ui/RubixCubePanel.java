@@ -1,11 +1,11 @@
 package ui;
 
 import cube.RubixCube;
-import de.javasoft.plaf.synthetica.SyntheticaBlackEyeLookAndFeel;
 import experiment.ExperimentResultsWriter;
 import experiment.RubixCubeExperiment;
 import experiment.ExperimentParameters;
 import experiment.Tuple;
+import main.IncorrectNumberOfInputsException;
 import searches.*;
 import searches.Searchable.EdgeChildPair;
 
@@ -18,15 +18,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  *
  * Created by Chris on 1/5/2016.
  */
-public class Display {
+public class RubixCubePanel extends JPanel {
     private static final boolean autoRestartProgramAfterCompletion = false;
     private static final boolean autoStartExperiment = false;
-    private final NeuralNetPanel nnPanel;
+    private final JButton useNNButton;
+
+    private final JComboBox<String> dir;
+    private final JComboBox<Integer> col;
+    private final JComboBox<Integer> row;
+    private final JButton rotateEW;
+    private final JButton rotateRow;
+    private final JButton rotateNS;
 
     private boolean showCubeStatesDuringSearch = false;
 
@@ -47,38 +55,10 @@ public class Display {
     private RubixCubeExperiment experiment;
 
 
-    public Display() {
+    public RubixCubePanel(Function<String,String> CubeNNInterface) {
+        super(new BorderLayout());
+        layout = this;
 
-        JFrame window = new JFrame("Rubix");
-        JTabbedPane tabbedPane = new JTabbedPane();
-        nnPanel = new NeuralNetPanel();
-        tabbedPane.add("Neural Net",nnPanel);
-
-        //Setup menu bar
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu experimentMenu = new JMenu("Experiments");
-        JMenuItem experimentMenuItem = new JMenuItem("RubixCubeExperiment",'e');
-        experimentMenuItem.addActionListener(e -> new ExperimentPopupWindow());
-        experimentMenu.add(experimentMenuItem);
-
-
-        JMenuItem NNexperimentMenu = new JMenuItem("NN Heat Map Experiment",'n');
-        NNexperimentMenu.addActionListener(e -> new NNExperimentPopupWindow(Display.this));
-        experimentMenu.add(NNexperimentMenu);
-        menuBar.add(experimentMenu);
-
-
-        JMenu utilMenu = new JMenu("Util");
-        JMenuItem cubeNNInterface = new JMenuItem("Cube NN Interface",'e');
-        cubeNNInterface.addActionListener(e -> new CubeNNInterface(Display.this));
-        utilMenu.add(cubeNNInterface);
-        menuBar.add(utilMenu);
-
-        window.setJMenuBar(menuBar);
-
-
-        layout = new JPanel(new BorderLayout());
         cubePanel = new CubeDisplayPanel(new RubixCube(cubeSize));
         cubePanel.setMinimumSize(new Dimension(900,900));
         cubePanel.setSize(900,900);
@@ -100,6 +80,15 @@ public class Display {
                 diagnosticPanel.repaint();
             }
         };
+
+        TextBox cubeSizeTB = new TextBox("Cube Size:","3",10);
+        JButton createCubeButton = new JButton("Create Cube");
+        createCubeButton.addActionListener(e->{
+            cubePanel.setCube(new RubixCube(Integer.parseInt(cubeSizeTB.getText())));
+        });
+        diagnosticPanel.add(cubeSizeTB);
+        diagnosticPanel.add(createCubeButton);
+
 
 
         JCheckBox showCubeStatesDuringSearchCheckbox = new JCheckBox("Show cube states during search.");
@@ -144,7 +133,7 @@ public class Display {
         JPanel buttons = new JPanel(new FlowLayout());
 
         JLabel colLabel = new JLabel("Col:");
-        JComboBox<Integer> col = new JComboBox<>();
+        col = new JComboBox<>();
         col.addItem(-1);
         for (int i = 0; i < cubeSize; i++)
             col.addItem(i);
@@ -154,20 +143,20 @@ public class Display {
 
 
         JLabel rowLabel = new JLabel("Row:");
-        JComboBox<Integer> row = new JComboBox<>();
+        row = new JComboBox<>();
         row.addItem(-1);
         for (int i = 0; i < cubeSize; i++)
             row.addItem(i);
         buttons.add(rowLabel);
         buttons.add(row);
 
-        JComboBox<String> dir = new JComboBox<>();
+        dir = new JComboBox<>();
         dir.addItem("CW");
         dir.addItem("CCW");
         buttons.add(dir);
 
 
-        JButton rotateNS = new JButton("RotateNS");
+        rotateNS = new JButton("RotateNS");
         rotateNS.addActionListener(e -> {
             int column = (Integer)col.getSelectedItem();
             if( column != -1){
@@ -177,7 +166,7 @@ public class Display {
         });
         buttons.add(rotateNS);
 
-        JButton rotateEW = new JButton("RotateEW");
+        rotateEW = new JButton("RotateEW");
         rotateEW.addActionListener(e -> {
             int column = (Integer)col.getSelectedItem();
             if( column != -1){
@@ -188,7 +177,7 @@ public class Display {
         });
         buttons.add(rotateEW);
 
-        JButton rotateRow = new JButton("RotateRow");
+        rotateRow = new JButton("RotateRow");
         rotateRow.addActionListener(e -> {
             int Row = (Integer)row.getSelectedItem();
             if( Row != -1){
@@ -235,7 +224,7 @@ public class Display {
         buttons.add(solveButton);
 
         JTextField sleepTimeField = new JTextField(sleepTime+"");
-        sleepTimeField.setColumns(30);
+        sleepTimeField.setColumns(10);
         Runnable updateSleepBetweenStatesTime = () -> {
             try {
                 sleepTime = Integer.parseInt(sleepTimeField.getText());
@@ -258,53 +247,58 @@ public class Display {
             Tuple moveTuple = ((DefaultListModel<Tuple>)resultsList.getModel()).get(resultsList.getSelectedIndex());
             cubePanel.setCube(new RubixCube((RubixCube) moveTuple.state));
             String move = (String) moveTuple.edge;
-            if( move != null ) {
-                String[] parts = move.split(":");
-                int colOrRow = Integer.parseInt(parts[1]);
-
-                boolean cw = parts[2].equals("cw");
-                dir.setSelectedIndex(cw ? 0 : 1);
-
-                switch (parts[0]){
-                    case "EW":
-                        //System.out.println("Rotating ew col " + colOrRow + (cw?"cw":"ccw"));
-                        col.setSelectedIndex(colOrRow+1);
-                        rotateEW.doClick();
-                        break;
-                    case "NS":
-                        //System.out.println("Rotating ns col " + colOrRow + (cw?"down":"up"));
-                        col.setSelectedIndex(colOrRow+1);
-                        rotateNS.doClick();
-                        break;
-                    case "Row":
-                        //System.out.println("Rotating row " + colOrRow + (cw?"cw":"ccw"));
-                        row.setSelectedIndex(colOrRow+1);
-                        rotateRow.doClick();
-                        break;
-                }
-            }
+            doMove(move);
         });
         buttons.add(doMove);
 
+        useNNButton = new JButton("Use NN to Solve");
+        useNNButton.setToolTipText("You must have a NN in the NN Panel to use this");
+        useNNButton.addActionListener(e -> {
+            try {
+                String move = CubeNNInterface.apply(cubePanel.getCube().toString());
+                doMove(move);
+            }
+            catch( IncorrectNumberOfInputsException ex ){
+                ex.printStackTrace();
+            }
+        });
+        buttons.add(useNNButton);
+
         layout.add(buttons,BorderLayout.SOUTH);
 
-        tabbedPane.addTab("Searches",layout);
-        window.setContentPane(tabbedPane);
 
-        window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int width = gd.getDisplayMode().getWidth();
-        int height = gd.getDisplayMode().getHeight();
-        window.setSize(width-100,height-100);
-        window.setExtendedState(Frame.ICONIFIED);
-        window.setVisible(true);
-
-        if( autoStartExperiment ){
+        if( autoStartExperiment )
             solveButton.doClick();
-        }
     }
 
+    public void doMove(String move){
+
+        if( move != null ) {
+            String[] parts = move.split(":");
+            int colOrRow = Integer.parseInt(parts[1]);
+
+            boolean cw = parts[2].equals("cw");
+            dir.setSelectedIndex(cw ? 0 : 1);
+
+            switch (parts[0]){
+                case "EW":
+                    //System.out.println("Rotating ew col " + colOrRow + (cw?"cw":"ccw"));
+                    col.setSelectedIndex(colOrRow+1);
+                    rotateEW.doClick();
+                    break;
+                case "NS":
+                    //System.out.println("Rotating ns col " + colOrRow + (cw?"down":"up"));
+                    col.setSelectedIndex(colOrRow+1);
+                    rotateNS.doClick();
+                    break;
+                case "Row":
+                    //System.out.println("Rotating row " + colOrRow + (cw?"cw":"ccw"));
+                    row.setSelectedIndex(colOrRow+1);
+                    rotateRow.doClick();
+                    break;
+            }
+        }
+    }
 
 
     private void runExperiment(ExperimentParameters expParams){
@@ -402,12 +396,6 @@ public class Display {
 
 
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(Display::new);
-    }
-
-
-
 
     public static void restartProgram()  {
         String separator = System.getProperty("file.separator");
@@ -417,7 +405,7 @@ public class Display {
         ProcessBuilder processBuilder =
                 new ProcessBuilder(path, "-cp",
                         classpath,
-                        Display.class.getName());
+                        RubixCubePanel.class.getName());
         try {
             processBuilder.start();
         } catch (IOException e) {
@@ -438,7 +426,4 @@ public class Display {
         return cubePanel.getCube();
     }
 
-    public NeuralNetPanel getNnPanel() {
-        return nnPanel;
-    }
 }
