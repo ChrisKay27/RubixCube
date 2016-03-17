@@ -14,22 +14,15 @@ import java.util.List;
  */
 public class NNTrainingDataLoader {
     public static List<TrainingTuple> loadTrainingTuples(File f){
-        ArrayList<TrainingTuple> trainingTuples = new ArrayList<>();
+        List<TrainingTuple> trainingTuples = new ArrayList<>();
 
         try(BufferedReader br = new BufferedReader(new FileReader(f))){
             br.lines().forEach(tupleStr->{
                 String[] tupleSplit = tupleStr.split("\\|");
 
-                String[] inputsSplit = tupleSplit[0].split(",");
-                List<Double> inputs = new ArrayList<>();
-                for(String inputStr : inputsSplit )
-                    inputs.add(Double.parseDouble(inputStr));
+                List<Double> inputs = toDoubleList(tupleSplit[0]);
 
-
-                List<Double> outputs = new ArrayList<>();
-                String[] ouputsSplit = tupleSplit[1].split(",");
-                for(String outputStr : ouputsSplit )
-                    outputs.add(Double.parseDouble(outputStr));
+                List<Double> outputs = toDoubleList(tupleSplit[1]);
 
 //                System.out.println("input size " + inputs.size() + " outputs size: " + outputs.size());
                 trainingTuples.add(new TrainingTuple(inputs,outputs));
@@ -45,4 +38,14 @@ public class NNTrainingDataLoader {
 
         return trainingTuples;
     }
+
+    public static List<Double> toDoubleList(String s){
+        String[] inputsSplit = s.split(",");
+        List<Double> doubles = new ArrayList<>();
+        for(String inputStr : inputsSplit )
+            doubles.add(Double.parseDouble(inputStr));
+        return doubles;
+    }
+
+
 }

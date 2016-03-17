@@ -16,7 +16,8 @@ public class NNExperimentParams {
     private double weightDecay;
 
 
-    public NNExperimentParams(double a, double b, double n, boolean usingBias, int epochs, int trainingIterationsPerEpoch, int inputs, int hiddenLayers, double desiredErrorRate, double alpha, int... hiddenNeuronsPerLayer) {
+    public NNExperimentParams(double a, double b, double n, boolean usingBias, int epochs, int trainingIterationsPerEpoch,
+                              int inputs, int hiddenLayers, int outputs, double desiredErrorRate, double alpha, int... hiddenNeuronsPerLayer) {
         this.a = a;
         this.b = b;
         this.n = n;
@@ -25,6 +26,7 @@ public class NNExperimentParams {
         this.trainingIterationsPerEpoch = trainingIterationsPerEpoch;
         this.inputs = inputs;
         this.hiddenLayers = hiddenLayers;
+        this.outputs = outputs;
         this.desiredErrorRate = desiredErrorRate;
         this.alpha = alpha;
         this.hiddenNeuronsPerLayer = hiddenNeuronsPerLayer;

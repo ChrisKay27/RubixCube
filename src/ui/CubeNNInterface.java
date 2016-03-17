@@ -48,6 +48,7 @@ public class CubeNNInterface extends JFrame {
         setVisible(true);
     }
 
+
     public static void main(String[] args) {
 
         String[] outputs = new String[]{"-1,1,-1,1,-1,-1,1","-1,-1,1,1,-1,-1,-1","-1,-1,1,-1,1,-1,1","1,-1,-1,-1,1,-1,-1"

@@ -8,9 +8,7 @@ import sbp.SBPNNExperiment;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.*;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Created by chris_000 on 2/24/2016.
@@ -350,9 +348,8 @@ public class NNParamsPanel extends JPanel{
 
         int hiddenLayers = hNeurons.length;
 
-        NNExperimentParams nnExperimentParams = new NNExperimentParams(A, B, N, useBias, epochs, trainingIterationsPerEpoch, getInputs(), hiddenLayers, desiredErrorRate, alpha, hNeurons);
+        NNExperimentParams nnExperimentParams = new NNExperimentParams(A, B, N, useBias, epochs, trainingIterationsPerEpoch, getInputs(), hiddenLayers, getOutputs(), desiredErrorRate, alpha, hNeurons);
         nnExperimentParams.setWeightDecay(getWeightDecay());
-        nnExperimentParams.setOutputs(getOutputs());
         return nnExperimentParams;
     }
 

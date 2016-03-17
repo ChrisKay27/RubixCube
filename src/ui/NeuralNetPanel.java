@@ -39,7 +39,7 @@ public class NeuralNetPanel extends JPanel {
 
     private boolean updateUI = true;
     private int sleepTime = 100;
-    private SBPNNExperiment sbpNNExperiment = new SBPNNExperiment(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 ,1, 0.000001 , 0.01, 5));
+    private SBPNNExperiment sbpNNExperiment = new SBPNNExperiment(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 , 1, 7, 0.000001 , 0.01, 5));
 
     private Runnable updateUIRunnable;
 
@@ -60,15 +60,14 @@ public class NeuralNetPanel extends JPanel {
         ALabel.setLabelFor(ATextBox);
         temp.add(ALabel);
         temp.add(ATextBox);
-        northPanel.add(temp);
 
-        temp = new JPanel();
         JLabel BLabel = new JLabel("B:");
         BTextBox = new JTextField("0.667",10);
         BLabel.setLabelFor(BTextBox);
         temp.add(BLabel);
         temp.add(BTextBox);
         northPanel.add(temp);
+
 
         temp = new JPanel();
         JLabel NLabel = new JLabel("Learning Rate:");
@@ -84,9 +83,7 @@ public class NeuralNetPanel extends JPanel {
         alphaLabel.setLabelFor(AlphaTextBox);
         temp.add(alphaLabel);
         temp.add(AlphaTextBox);
-        northPanel.add(temp);
 
-        temp = new JPanel();
         JLabel weightDecayLabel = new JLabel("Weight Decay:");
         weightDecayTextBox = new JTextField("0.01",5);
         alphaLabel.setLabelFor(weightDecayTextBox);
@@ -100,9 +97,7 @@ public class NeuralNetPanel extends JPanel {
         TrainingItsLabel.setLabelFor(TrainingItsTextBox);
         temp.add(TrainingItsLabel);
         temp.add(TrainingItsTextBox);
-        northPanel.add(temp);
 
-        temp = new JPanel();
         JLabel EpochLabel = new JLabel("Training Epochs:");
         EpochTextBox = new JTextField("100",6);
         EpochLabel.setLabelFor(EpochTextBox);
@@ -110,21 +105,28 @@ public class NeuralNetPanel extends JPanel {
         temp.add(EpochTextBox);
         northPanel.add(temp);
 
-        temp = new JPanel();
-        JLabel HiddenLayersLabel = new JLabel("Hidden Layers:");
-        JTextField HiddenLayersTextBox = new JTextField("1",10);
-        HiddenLayersLabel.setLabelFor(HiddenLayersTextBox);
-        temp.add(HiddenLayersLabel);
-        temp.add(HiddenLayersTextBox);
-        northPanel.add(temp);
 
         temp = new JPanel();
-        temp.setPreferredSize(new Dimension(300,70));
+        temp.setPreferredSize(new Dimension(200,100));
+        JLabel inputsLabel = new JLabel("Inputs:");
+        JTextField inputsTextBox = new JTextField("324",7);
+        inputsLabel.setLabelFor(inputsTextBox);
+        temp.add(inputsLabel);
+        temp.add(inputsTextBox);
+
+
         JLabel HidNeuronsPerLayerLabel = new JLabel("<html>Hidden Neurons Per Layer<br> ('2-3' if you want a 2-2-3-1 NN):<html>");
         JTextField HidNeuronsPerLayerTextBox = new JTextField("2",10);
         HidNeuronsPerLayerLabel.setLabelFor(HidNeuronsPerLayerTextBox);
         temp.add(HidNeuronsPerLayerLabel);
         temp.add(HidNeuronsPerLayerTextBox);
+
+        JLabel outputsLabel = new JLabel("Outputs:");
+        JTextField outputsTextBox = new JTextField("7",7);
+        outputsLabel.setLabelFor(outputsTextBox);
+        temp.add(outputsLabel);
+        temp.add(outputsTextBox);
+
         northPanel.add(temp);
 
         temp = new JPanel();
@@ -143,7 +145,10 @@ public class NeuralNetPanel extends JPanel {
             double A = Double.parseDouble(ATextBox.getText());
             double B = Double.parseDouble(BTextBox.getText());
             double N = Double.parseDouble(NTextBox.getText());
-            int hiddenLayers = Integer.parseInt(HiddenLayersTextBox.getText());
+
+            int inputs = Integer.parseInt(inputsTextBox.getText());
+            int outputs = Integer.parseInt(outputsTextBox.getText());
+
             int trainingIterationsPerEpoch = Integer.parseInt(TrainingItsTextBox.getText());
             int epochs = Integer.parseInt(EpochTextBox.getText());
             double desiredErrorRate = Double.parseDouble(ErrorRateTextBox.getText());
@@ -157,9 +162,9 @@ public class NeuralNetPanel extends JPanel {
                 String num = hNeuronsSpl[i];
                 hNeurons[i] = Integer.parseInt(num);
             }
+            int hiddenLayers = hNeurons.length;
 
-
-            NNExperimentParams params = new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 324, hiddenLayers, desiredErrorRate, alpha, hNeurons);
+            NNExperimentParams params = new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, inputs, hiddenLayers, outputs, desiredErrorRate, alpha, hNeurons);
             params.setWeightDecay(weightDecay);
             sbpNNExperiment = new SBPNNExperiment(params);
             sbpNNExperiment.setUpdateListener(sbpState -> updateUIRunnable.run());
@@ -507,5 +512,9 @@ public class NeuralNetPanel extends JPanel {
 
     public JLabel getOutputLabel() {
         return OutputLabel;
+    }
+
+    public List<Double> feedForward(List<Double> inputs) {
+        return sbpNNExperiment.getNeuralNet().feedForward(inputs);
     }
 }

@@ -1,19 +1,27 @@
 package main;
 
 import de.javasoft.plaf.synthetica.SyntheticaBlackEyeLookAndFeel;
+import neuralnet.NNTrainingDataLoader;
 import tests.NNTestMain;
 import tests.TestMain;
 import training.TrainingDataGenerator;
-import ui.*;
+import ui.NNExperimentPopupWindow;
+import ui.NeuralNetPanel;
+import ui.RubixCubePanel;
+import ui.SearchToNNToSolveExperimentPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+
 
 /**
  *
  * Created by Chris on 1/27/2016.
  */
 public class Main {
+    private static NeuralNetPanel nnPanel;
+
     public static void main(String[] args) {
         for (String s : args){
             if( "-gentrainingdata".equals(s.toLowerCase())){
@@ -60,13 +68,14 @@ public class Main {
 
             mainFrame.setJMenuBar(menuBar);
 
+            nnPanel = new NeuralNetPanel();
 
             JTabbedPane tpane = new JTabbedPane();
             tpane.add("Search-NN-Solve Experiment",new SearchToNNToSolveExperimentPanel());
-            tpane.add("Neural Net", new NeuralNetPanel());
+            tpane.add("Neural Net", nnPanel);
 
 
-            tpane.add("Rubix Cube",new RubixCubePanel());
+            tpane.add("Rubix Cube",new RubixCubePanel(Main::cubeNNInterface));
 
 
             mainFrame.setContentPane(tpane);
@@ -79,7 +88,59 @@ public class Main {
             mainFrame.setExtendedState(Frame.ICONIFIED);
             mainFrame.setVisible(true);
         });
-
-
     }
+
+
+    public static String cubeNNInterface(String cubeState){
+        String encodedCubeState = TrainingDataGenerator.getCubeStateTT(cubeState);
+        List<Double> inputs = NNTrainingDataLoader.toDoubleList(encodedCubeState);
+        List<Double> outputs = nnPanel.feedForward(inputs);
+
+        return getMoveFromNNOutput(outputs);
+    }
+
+    public static String getMoveFromNNOutput(List<Double> outputs){
+
+        String sliceEncoding = "";
+        int o;
+        for (int i = 0; i < 3; i++) {
+            if( outputs.get(i) > 0 )
+                o = 1;
+            else o = -1;
+            sliceEncoding += o + ",";
+        }
+
+        String colOrRow = "";
+        for (int i = 3; i < 6; i++) {
+            if( outputs.get(i) > 0 )
+                o = 1;
+            else o = -1;
+            colOrRow += o + ",";
+        }
+
+        String dir = "";
+        for (int i = 6; i < 7; i++) {
+            if( outputs.get(i) > 0 )
+                o = 1;
+            else o = -1;
+            dir += o + ",";
+        }
+
+        int colOrRowInt = TrainingDataGenerator.getColOrRowdecoding(colOrRow);
+        dir = TrainingDataGenerator.getDirdecoding(dir);
+        sliceEncoding = TrainingDataGenerator.decodeSlice(sliceEncoding);
+
+        return sliceEncoding + ":"  + colOrRowInt + ":" + dir ;
+    }
+
 }
+
+
+
+
+
+
+
+
+
+

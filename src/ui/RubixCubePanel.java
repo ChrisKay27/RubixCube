@@ -1,17 +1,17 @@
 package ui;
 
 import cube.RubixCube;
+import experiment.ExperimentParameters;
 import experiment.ExperimentResultsWriter;
 import experiment.RubixCubeExperiment;
-import experiment.ExperimentParameters;
 import experiment.Tuple;
-import main.IncorrectNumberOfInputsException;
-import searches.*;
+import searches.Search;
+import searches.SearchDiagnostic;
+import searches.Searchable;
 import searches.Searchable.EdgeChildPair;
 
 import javax.swing.*;
 import java.awt.*;
-
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
@@ -258,8 +258,11 @@ public class RubixCubePanel extends JPanel {
                 String move = CubeNNInterface.apply(cubePanel.getCube().toString());
                 doMove(move);
             }
-            catch( IncorrectNumberOfInputsException ex ){
+            catch( Exception ex ){
                 ex.printStackTrace();
+                JDialog errorDialog = new JDialog((Frame)null,"Unintelligible NN Output");
+                errorDialog.setSize(100,50);
+                errorDialog.setVisible(true);
             }
         });
         buttons.add(useNNButton);

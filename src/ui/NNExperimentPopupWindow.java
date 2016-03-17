@@ -326,7 +326,7 @@ public class NNExperimentPopupWindow extends JFrame {
         double desiredErrorRate = 0.00001;
         double alpha = Double.parseDouble(AlphaMinTextBox.getText());
 
-        return new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 2, hiddenLayers, desiredErrorRate, alpha, 2);
+        return new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, 2, hiddenLayers, 1, desiredErrorRate, alpha, 2);
     }
 
     private int[] getIntRange(String MinTextBox, String MaxTextBox, String IncTextBox) {
