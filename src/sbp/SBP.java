@@ -113,7 +113,7 @@ public class SBP {
 
                 //Keep track of the best NN
                 if( currentBest.getNetworkError() > sbpImpl.getNetworkError() ){
-                    System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
+//                    System.out.println("Found a better Network, prev error:" + currentBest.getNetworkError() + " new error:" + sbpImpl.getNetworkError());
                     currentBest = sbpImpl.copy();
                 }
 //                else{
@@ -139,7 +139,7 @@ public class SBP {
 //                    System.out.println("Done iteration " + i);
             }
 
-            System.out.println("Epoch " + epoc + " over, error: " + currentBest.getNetworkError());
+//            System.out.println("Epoch " + epoc + " over, error: " + currentBest.getNetworkError());
 
             //Reinit sbpImpl for the next epoch
             sbpImpl.init();

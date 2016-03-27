@@ -35,8 +35,9 @@ public class SBPNNExperiment {
     private boolean usingBias = true;
     private NeuralNet neuralNet;
 
+
     private Function<Double,Double> sigmoid = net -> A*Math.tanh(B*net);
-    private Function<Double,Double> deriv_sigmoid = net -> A*(1-Math.pow(Math.tanh(B*net),2));
+    private Function<Double,Double> deriv_sigmoid = net -> A*B*(1-Math.pow(Math.tanh(B*net),2));
 
     private Consumer<SBP.SBPState> updateListener;
 
@@ -76,7 +77,7 @@ public class SBPNNExperiment {
         sbpParams = new SBPParams();
         sbpParams.setN(N);
         sbpParams.setDeriv_sigmoid(deriv_sigmoid);
-        sbpParams.setSBPListener(sbpState -> updateListener.accept(sbpState));
+        sbpParams.setSBPListener(sbpState -> {if( updateListener != null ) updateListener.accept(sbpState);});
         sbpParams.setDesiredErrorRate(desiredErrorRate);
         sbpParams.setAlpha(alpha);
         sbpParams.setEpocs(epochs);

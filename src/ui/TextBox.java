@@ -62,4 +62,8 @@ public class TextBox extends JPanel {
     public boolean isEditable() {
         return textField.isEditable();
     }
+
+    public int getInt(){
+        return Integer.parseInt(textField.getText());
+    }
 }

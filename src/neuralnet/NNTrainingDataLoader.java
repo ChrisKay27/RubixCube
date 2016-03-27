@@ -18,14 +18,19 @@ public class NNTrainingDataLoader {
 
         try(BufferedReader br = new BufferedReader(new FileReader(f))){
             br.lines().forEach(tupleStr->{
-                String[] tupleSplit = tupleStr.split("\\|");
+                try {
+                    String[] tupleSplit = tupleStr.split("\\|");
 
-                List<Double> inputs = toDoubleList(tupleSplit[0]);
+                    List<Double> inputs = toDoubleList(tupleSplit[0]);
 
-                List<Double> outputs = toDoubleList(tupleSplit[1]);
+                    List<Double> outputs = toDoubleList(tupleSplit[1]);
 
 //                System.out.println("input size " + inputs.size() + " outputs size: " + outputs.size());
-                trainingTuples.add(new TrainingTuple(inputs,outputs));
+                    trainingTuples.add(new TrainingTuple(inputs, outputs));
+                }
+                catch(Exception e){
+                    System.err.println("Bad training tuple format: "+ tupleStr);
+                }
             });
 
 

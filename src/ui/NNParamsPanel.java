@@ -6,25 +6,35 @@ import sbp.SBP;
 import sbp.SBPNNExperiment;
 
 import javax.swing.*;
+import javax.xml.soap.Text;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by chris_000 on 2/24/2016.
  */
 public class NNParamsPanel extends JPanel{
+
+
+
     private final JTextField ATextBox;
     private final JTextField BTextBox;
     private final JTextField ErrorRateTextBox;
     private final JTextField NTextBox;
     private final JTextField AlphaTextBox;
     private final JTextField TrainingItsTextBox;
-    private final JTextField HidNeuronsPerLayerTextBox;
+    private final TextBox topologyTextBox;
     private final JTextField EpochTextBox;
     private final JTextField weightDecayTextBox;
-    private final JTextField inputsTextBox;
-    private final JTextField outputsTextBox;
+    private final JLabel currentNNLabel;
+    private final JLabel trainTuplesLabel;
+    private final JButton run;
+    private final JButton feedForwardButton;
+
+    private long nextUpdate;
+
     private boolean useBias = true;
     private List<TrainingTuple> trainingTuples;
     private boolean updateLabel = true;
@@ -41,7 +51,7 @@ public class NNParamsPanel extends JPanel{
         JPanel temp = new JPanel();
         JPanel temp2 = new JPanel();
         JLabel ALabel = new JLabel("A:");
-        ATextBox = new JTextField("1.716",10);
+        ATextBox = new JTextField("1",4);
         ALabel.setLabelFor(ATextBox);
         temp2.add(ALabel);
         temp2.add(ATextBox);
@@ -49,7 +59,7 @@ public class NNParamsPanel extends JPanel{
 
         temp2 = new JPanel();
         JLabel BLabel = new JLabel("B:");
-        BTextBox = new JTextField("0.667",10);
+        BTextBox = new JTextField("0.3",4);
         BLabel.setLabelFor(BTextBox);
         temp2.add(BLabel);
         temp2.add(BTextBox);
@@ -60,7 +70,7 @@ public class NNParamsPanel extends JPanel{
         temp = new JPanel();
         temp2 = new JPanel();
         JLabel NLabel = new JLabel("Learning Rate:");
-        NTextBox = new JTextField("0.125",10);
+        NTextBox = new JTextField("0.125",8);
         NLabel.setLabelFor(NTextBox);
         temp2.add(NLabel);
         temp2.add(NTextBox);
@@ -110,28 +120,10 @@ public class NNParamsPanel extends JPanel{
         temp.add(temp2);
 
 
-        temp2 = new JPanel();
-        JLabel inputsLabel = new JLabel("Inputs: ");
-        inputsTextBox = new JTextField("324",10);
-        inputsLabel.setLabelFor(inputsTextBox);
-        temp2.add(inputsLabel);
-        temp2.add(inputsTextBox);
-        temp.add(temp2);
 
         temp2 = new JPanel();
-        JLabel HidNeuronsPerLayerLabel = new JLabel("<html>Hidden Neurons Per Layer<br> ('2-3' if you want a 2-2-3-1 NN):</html>");
-        HidNeuronsPerLayerTextBox = new JTextField("2",20);
-        HidNeuronsPerLayerLabel.setLabelFor(HidNeuronsPerLayerTextBox);
-        temp2.add(HidNeuronsPerLayerLabel);
-        temp2.add(HidNeuronsPerLayerTextBox);
-        temp.add(temp2);
-
-        temp2 = new JPanel();
-        JLabel outputsLabel = new JLabel("Outputs: ");
-        outputsTextBox = new JTextField("7",10);
-        outputsLabel.setLabelFor(outputsTextBox);
-        temp2.add(outputsLabel);
-        temp2.add(outputsTextBox);
+        topologyTextBox = new TextBox("Topology","324-2-7",20);
+        temp2.add(topologyTextBox);
         temp.add(temp2);
         add(temp);
 
@@ -155,10 +147,10 @@ public class NNParamsPanel extends JPanel{
 
         temp = new JPanel();
         final JButton stop = new JButton("Stop");
-        final JButton run = new JButton("Run");
+        run = new JButton("Run");
         final JButton clear = new JButton("Clear Loaded NN");
 
-        JLabel trainTuplesLabel = new JLabel("No training data loaded");
+        trainTuplesLabel = new JLabel("No training data loaded");
         temp.add(trainTuplesLabel);
 
         JFileChooser fc = new JFileChooser();
@@ -173,8 +165,18 @@ public class NNParamsPanel extends JPanel{
                     if( !trainingTuples.isEmpty() ) {
                         run.setEnabled(true);
                         trainTuplesLabel.setText(trainingTuples.size() + " training tuples loaded");
-                        inputsTextBox.setText(trainingTuples.get(0).getInputs().size()+"");
-                        outputsTextBox.setText(trainingTuples.get(0).getExpectedOutputs().size()+"");
+
+                        int inputs = trainingTuples.get(0).getInputs().size();
+                        int outputs = trainingTuples.get(0).getExpectedOutputs().size();
+                        String t = topologyTextBox.getText();
+                        t = t.substring(t.indexOf('-'),t.lastIndexOf('-')+1);
+                        topologyTextBox.setText(inputs+t+outputs);
+
+                        if( nnToUse != null && (nnToUse.getInputNeurons().size() != trainingTuples.get(0).getInputs().size()
+                                || nnToUse.getOutputNeurons().size() != trainingTuples.get(0).getExpectedOutputs().size())){
+                            clear.doClick();
+                            infoLabel.setText("Loading training tuples did not match NN input or output!");
+                        }
                     }
             }
         });
@@ -183,6 +185,17 @@ public class NNParamsPanel extends JPanel{
 
         run.setEnabled(false);
         run.addActionListener(e -> new Thread(()->{
+
+            NNExperimentParams nnExpParams = getNNExpParams();
+            if(trainingTuples.get(0).getInputs().size() != nnExpParams.getInputs()) {
+                infoLabel.setText("<html>Loaded training tuples do not have the<br> same number of inputs as the nn!");
+                return;
+            }
+            if(trainingTuples.get(0).getExpectedOutputs().size() != nnExpParams.getOutputs()) {
+                infoLabel.setText("<html>Loaded training tuples do not have the<br> same number of outputs as the nn!");
+                return;
+            }
+
             run.setEnabled(false);
             stop.setEnabled(true);
             loadNNButton.setEnabled(false);
@@ -190,7 +203,7 @@ public class NNParamsPanel extends JPanel{
             clear.setEnabled(false);
 
 
-            sbpNNExperiment = new SBPNNExperiment(getNNExpParams());
+            sbpNNExperiment = new SBPNNExperiment(nnExpParams);
             sbpNNExperiment.setTrainingTuples(trainingTuples);
 
             if( nnToUse != null )
@@ -205,6 +218,8 @@ public class NNParamsPanel extends JPanel{
             sbpNNExperiment.setUpdateListener(sbpState -> {
                 if( !updateLabel ) return;
                 SwingUtilities.invokeLater(()-> {
+                    if( nextUpdate > System.currentTimeMillis()) return;
+                    nextUpdate = System.currentTimeMillis() + 100;
                     infoLabel.setText(String.format("<html>Status: Epoch: %d Iteration: %d<br> Error: %f<br>Over %d tuples<br>%f Error per tuple (avg)",
                             sbpState.epoch, sbpState.iteration, sbpState.bestError,trainingTuples.size(),sbpState.bestError/trainingTuples.size()));
                 });
@@ -219,20 +234,7 @@ public class NNParamsPanel extends JPanel{
             System.out.println("Iterations: " + runResults.numberOfIterationsTaken + " Epochs: " + runResults.numberOfEpochs + " Error: " + error);
 
 
-
-            SwingUtilities.invokeLater(()->{
-                stop.setEnabled(false);
-                run.setEnabled(true);
-                clear.setEnabled(true);
-//                JFrame results = new JFrame();
-//                JPanel content = new JPanel();
-//                results.setContentPane(content);
-//                content.add(new JLabel("<html>Experiment over<br>Resulting network error: " + error +"<html>"));
-//                results.setLocationRelativeTo(null);
-//                results.setSize(300,200);
-//                results.setVisible(true);
-            });
-
+            SwingUtilities.invokeLater(stop::doClick);
 
         }).start());
         temp.add(run);
@@ -246,14 +248,18 @@ public class NNParamsPanel extends JPanel{
             clear.setEnabled(true);
         });
         stop.setEnabled(false);
+
+
         temp.add(stop);
 
 
+
+        currentNNLabel = new JLabel("Current NN: None");
         clear.addActionListener(e -> {
             stop.doClick();
             nnToUse = null;
             clear.setVisible(false);
-
+            currentNNLabel.setText("Current NN: None");
             infoLabel.setText("Status: Cleared Loaded NN");
         });
         clear.setVisible(false);
@@ -264,6 +270,8 @@ public class NNParamsPanel extends JPanel{
 
 
         temp = new JPanel();
+        temp.add(currentNNLabel);
+
         fc.setCurrentDirectory(new File("."));
 
         loadNNButton.addActionListener(e -> {
@@ -277,21 +285,32 @@ public class NNParamsPanel extends JPanel{
 
                 if( nnToUse == null ){
                     infoLabel.setText("<html>Status: Unable to load NN from<br>" + file.getName());
+                    currentNNLabel.setText("Current NN: None");
                 }
                 else {
                     clear.setVisible(true);
                     infoLabel.setText("<html>Status: Loaded NN");
-                    inputsTextBox.setText(nnToUse.getInputNeurons().size()+"");
-                    outputsTextBox.setText(nnToUse.getOutputNeurons().size()+"");
+                    currentNNLabel.setText("Current NN: "+ nnToUse.getTopology());
+
+                    int inputs = nnToUse.getInputNeurons().size();
+                    int outputs = nnToUse.getOutputNeurons().size();
+
 
                     StringBuilder sb = new StringBuilder();
                     nnToUse.getHiddenLayers().forEach(hiddenLayer -> sb.append(hiddenLayer.size()).append('-'));
                     String hnpl = sb.toString();
                     if(hnpl.lastIndexOf("-") == hnpl.length()-1)
                         hnpl = hnpl.substring(0,hnpl.length()-1);
-                    HidNeuronsPerLayerTextBox.setText(hnpl);
+
+                    topologyTextBox.setText(inputs+"-"+hnpl+"-"+outputs);
+
 
                     biasCheckbox.setSelected(nnToUse.getBiasNeuron()!=null);
+
+
+                    Function<Double,Double> sigmoid = net -> getA()*Math.tanh(getB()*net);
+
+                    nnToUse.getNNParams().setSigmoid(sigmoid);
 
                 }
             }
@@ -315,6 +334,10 @@ public class NNParamsPanel extends JPanel{
             }
         });
         temp.add(saveNNButton);
+
+        feedForwardButton = new JButton("Feed Forward");
+        feedForwardButton.addActionListener(e -> new FeedForwardWindow(nnToUse,trainingTuples));
+        temp.add(feedForwardButton);
         add(temp);
 
 
@@ -339,11 +362,12 @@ public class NNParamsPanel extends JPanel{
         double alpha = Double.parseDouble(AlphaTextBox.getText());
 
 
-        String[] hNeuronsSpl = HidNeuronsPerLayerTextBox.getText().split("-");
-        int[] hNeurons = new int[hNeuronsSpl.length];
-        for (int i = 0; i < hNeuronsSpl.length; i++) {
+        String[] hNeuronsSpl = topologyTextBox.getText().split("-");
+        int[] hNeurons = new int[hNeuronsSpl.length-2];
+        int c = 0;
+        for (int i = 1; i < hNeuronsSpl.length-1; i++) {
             String num = hNeuronsSpl[i];
-            hNeurons[i] = Integer.parseInt(num);
+            hNeurons[c++] = Integer.parseInt(num);
         }
 
         int hiddenLayers = hNeurons.length;
@@ -376,7 +400,7 @@ public class NNParamsPanel extends JPanel{
     }
 
     public double getHiddenLayers() {
-        return HidNeuronsPerLayerTextBox.getText().split("-").length;
+        return topologyTextBox.getText().split("-").length;
     }
 
     public double getErrorRate() {
@@ -384,17 +408,18 @@ public class NNParamsPanel extends JPanel{
     }
 
     public int getInputs() {
-        return Integer.parseInt(inputsTextBox.getText());
+        return Integer.parseInt(topologyTextBox.getText().split("-")[0]);
     }
     public int getOutputs() {
-        return Integer.parseInt(outputsTextBox.getText());
+        String[] split = topologyTextBox.getText().split("-");
+        return Integer.parseInt(split[split.length-1]);
     }
     public double getWeightDecay() {
         return Double.parseDouble(weightDecayTextBox.getText());
     }
 
     public int[] getHiddenNeurons(){
-        String[] hNeuronsSpl = HidNeuronsPerLayerTextBox.getText().split("-");
+        String[] hNeuronsSpl = topologyTextBox.getText().split("-");
         int[] hNeurons = new int[hNeuronsSpl.length];
         for (int i = 0; i < hNeuronsSpl.length; i++) {
             String num = hNeuronsSpl[i];
@@ -403,4 +428,13 @@ public class NNParamsPanel extends JPanel{
         return hNeurons;
     }
 
+    public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
+        this.trainingTuples = trainingTuples;
+        trainTuplesLabel.setText(trainingTuples.size() + " training tuples loaded");
+        run.setEnabled(true);
+    }
+
+    public List<Double> feedForward(List<Double> inputs) {
+        return nnToUse.feedForward(inputs);
+    }
 }

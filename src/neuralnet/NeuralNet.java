@@ -122,19 +122,19 @@ public class NeuralNet implements SBPImpl, Serializable {
         //hidden layers
 
         hiddenLayers.forEach(hiddenNeurons -> {
-                    for (int h = 0; h < hiddenNeurons.size(); h++) {
-                        Neuron hiddenNeuron = hiddenNeurons.get(h);
-                        List<Edge> hiddenInputEdges = hiddenNeuron.getInputEdges();
+            for (int h = 0; h < hiddenNeurons.size(); h++) {
+                Neuron hiddenNeuron = hiddenNeurons.get(h);
+                List<Edge> hiddenInputEdges = hiddenNeuron.getInputEdges();
 
-                        double net = 0;
+                double net = 0;
 
-                        for (Edge hiddenInputEdge : hiddenInputEdges)
-                            net += hiddenInputEdge.getWeight() * hiddenInputEdge.getSource().getAct();
+                for (Edge hiddenInputEdge : hiddenInputEdges)
+                    net += hiddenInputEdge.getWeight() * hiddenInputEdge.getSource().getAct();
 
-                        hiddenNeuron.setNet(net);
-                        hiddenNeuron.setAct(params.getSigmoid().apply(net));
-                    }
-                });
+                hiddenNeuron.setNet(net);
+                hiddenNeuron.setAct(params.getSigmoid().apply(net));
+            }
+        });
 
 
         List<Double> outputs = new ArrayList<>();
@@ -200,5 +200,15 @@ public class NeuralNet implements SBPImpl, Serializable {
     @Override
     public NeuralNet copy() {
         return new NeuralNet(this);
+    }
+
+    public String getTopology() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(inputNeurons.size()).append("-");
+
+        hiddenLayers.forEach(hiddenLayer -> sb.append(hiddenLayer.size()).append("-"));
+
+        sb.append(outputNeurons.size());
+        return sb.toString();
     }
 }

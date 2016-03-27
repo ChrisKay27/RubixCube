@@ -17,6 +17,7 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -55,13 +56,13 @@ public class RubixCubePanel extends JPanel {
     private RubixCubeExperiment experiment;
 
 
-    public RubixCubePanel(Function<String,String> CubeNNInterface) {
+    public RubixCubePanel(BiFunction<Integer,String,String> CubeNNInterface) {
         super(new BorderLayout());
         layout = this;
 
         cubePanel = new CubeDisplayPanel(new RubixCube(cubeSize));
-        cubePanel.setMinimumSize(new Dimension(900,900));
-        cubePanel.setSize(900,900);
+//        cubePanel.setMinimumSize(new Dimension(900,900));
+//        cubePanel.setSize(900,900);
         layout.add(cubePanel,BorderLayout.CENTER);
 
         //Top panel which shows the size of the open and closed lists
@@ -84,7 +85,9 @@ public class RubixCubePanel extends JPanel {
         TextBox cubeSizeTB = new TextBox("Cube Size:","3",10);
         JButton createCubeButton = new JButton("Create Cube");
         createCubeButton.addActionListener(e->{
-            cubePanel.setCube(new RubixCube(Integer.parseInt(cubeSizeTB.getText())));
+            cubeSize = Integer.parseInt(cubeSizeTB.getText());
+            cubePanel.setCube(new RubixCube(cubeSize));
+            layout.repaint();
         });
         diagnosticPanel.add(cubeSizeTB);
         diagnosticPanel.add(createCubeButton);
@@ -110,8 +113,8 @@ public class RubixCubePanel extends JPanel {
 
 
         JPanel resultView = new JPanel(new BorderLayout());
-        resultView.setMinimumSize(new Dimension(900,900));
-        resultView.setSize(900,900);
+//        resultView.setMinimumSize(new Dimension(900,900));
+//        resultView.setSize(900,900);
         resultView.setBorder(BorderFactory.createTitledBorder("Results View"));
         resultView.add(new JLabel("       Try clicking on the tuples once the simulation is done         "),BorderLayout.NORTH);
 
@@ -255,13 +258,16 @@ public class RubixCubePanel extends JPanel {
         useNNButton.setToolTipText("You must have a NN in the NN Panel to use this");
         useNNButton.addActionListener(e -> {
             try {
-                String move = CubeNNInterface.apply(cubePanel.getCube().toString());
+                String move = CubeNNInterface.apply(cubeSize, cubePanel.getCube().toString());
                 doMove(move);
             }
             catch( Exception ex ){
                 ex.printStackTrace();
-                JDialog errorDialog = new JDialog((Frame)null,"Unintelligible NN Output");
-                errorDialog.setSize(100,50);
+                JFrame errorDialog = new JFrame("Unintelligible NN Output");
+                JLabel msg = new JLabel("<html>Do you have a NN loaded?<br>Is it the proper configuration for this cube?<br>If so then the NN is probably just not trained enough.");
+                errorDialog.getContentPane().add(msg);
+                errorDialog.setSize(300,100);
+                errorDialog.setLocationRelativeTo(null);
                 errorDialog.setVisible(true);
             }
         });
@@ -275,7 +281,7 @@ public class RubixCubePanel extends JPanel {
     }
 
     public void doMove(String move){
-
+        System.out.println("Doing move: " + move);
         if( move != null ) {
             String[] parts = move.split(":");
             int colOrRow = Integer.parseInt(parts[1]);

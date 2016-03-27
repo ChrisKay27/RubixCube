@@ -12,5 +12,6 @@
     <orderEntry type="library" name="synthetica" level="application" />
     <orderEntry type="library" name="jgraphx" level="application" />
     <orderEntry type="library" name="guava-18.0" level="application" />
+    <orderEntry type="library" name="mysql-connector-java-5.1.38-bin" level="application" />
   </component>
 </module>

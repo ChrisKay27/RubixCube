@@ -5,10 +5,8 @@ import neuralnet.NNTrainingDataLoader;
 import tests.NNTestMain;
 import tests.TestMain;
 import training.TrainingDataGenerator;
-import ui.NNExperimentPopupWindow;
-import ui.NeuralNetPanel;
-import ui.RubixCubePanel;
-import ui.SearchToNNToSolveExperimentPanel;
+import ui.*;
+import util.WTFException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,11 +27,11 @@ public class Main {
                 System.exit(0);
             }
             else if("-unittest".equals(s.toLowerCase())){
-                TestMain.main(args);
+                TestMain.main(System.out::println);
                 System.exit(1);
             }
             else if("-unittestnn".equals(s.toLowerCase())){
-                NNTestMain.main(args);
+                NNTestMain.main(System.out::println);
                 System.exit(1);
             }
         }
@@ -60,50 +58,57 @@ public class Main {
             experimentMenu.add(NNexperimentMenu);
             menuBar.add(experimentMenu);
 
-//            JMenu utilMenu = new JMenu("Util");
-//            JMenuItem cubeNNInterface = new JMenuItem("Cube NN Interface",'e');
-//            cubeNNInterface.addActionListener(e -> new CubeNNInterface(RubixCubePanel.this));
-//            utilMenu.add(cubeNNInterface);
-//            menuBar.add(utilMenu);
+
+
+            JMenu unitTesting = new JMenu("Unit Testing");
+
+            JMenuItem unitTest = new JMenuItem("Unit Test Rubix Cube",'r');
+            unitTest.addActionListener(e -> new UnitTestRubixCubeWindow());
+            unitTesting.add(unitTest);
+
+            JMenuItem unitTestNN = new JMenuItem("Unit Test Neural Net",'e');
+            unitTestNN.addActionListener(e -> new UnitTestSBPWindow());
+            unitTesting.add(unitTestNN);
+
+            menuBar.add(unitTesting);
 
             mainFrame.setJMenuBar(menuBar);
+
+
+
 
             nnPanel = new NeuralNetPanel();
 
             JTabbedPane tpane = new JTabbedPane();
             tpane.add("Search-NN-Solve Experiment",new SearchToNNToSolveExperimentPanel());
+            tpane.add("NN-Variations Experiment",new Phase3ExperimentPanel());
             tpane.add("Neural Net", nnPanel);
-
 
             tpane.add("Rubix Cube",new RubixCubePanel(Main::cubeNNInterface));
 
 
             mainFrame.setContentPane(tpane);
-
-            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            int width = gd.getDisplayMode().getWidth();
-            int height = gd.getDisplayMode().getHeight();
-            mainFrame.setSize(width-100,height-100);
+            mainFrame.setSize(1600,1000);
             mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            mainFrame.setExtendedState(Frame.ICONIFIED);
             mainFrame.setVisible(true);
         });
     }
 
 
-    public static String cubeNNInterface(String cubeState){
+    public static String cubeNNInterface(int cubesize, String cubeState){
         String encodedCubeState = TrainingDataGenerator.getCubeStateTT(cubeState);
         List<Double> inputs = NNTrainingDataLoader.toDoubleList(encodedCubeState);
         List<Double> outputs = nnPanel.feedForward(inputs);
 
-        return getMoveFromNNOutput(outputs);
+        return getMoveFromNNOutput(cubesize,outputs);
     }
 
-    public static String getMoveFromNNOutput(List<Double> outputs){
+    public static String getMoveFromNNOutput(int cubeSize, List<Double> outputs){
 
         String sliceEncoding = "";
         int o;
-        for (int i = 0; i < 3; i++) {
+        int i=0;
+        for (; i < 3; i++) {
             if( outputs.get(i) > 0 )
                 o = 1;
             else o = -1;
@@ -111,7 +116,7 @@ public class Main {
         }
 
         String colOrRow = "";
-        for (int i = 3; i < 6; i++) {
+        for (; i < 3+cubeSize; i++) {
             if( outputs.get(i) > 0 )
                 o = 1;
             else o = -1;
@@ -119,7 +124,7 @@ public class Main {
         }
 
         String dir = "";
-        for (int i = 6; i < 7; i++) {
+        for (; i < outputs.size(); i++) {
             if( outputs.get(i) > 0 )
                 o = 1;
             else o = -1;
@@ -130,6 +135,8 @@ public class Main {
         dir = TrainingDataGenerator.getDirdecoding(dir);
         sliceEncoding = TrainingDataGenerator.decodeSlice(sliceEncoding);
 
+        if( colOrRowInt == -1)
+            throw new WTFException();
         return sliceEncoding + ":"  + colOrRowInt + ":" + dir ;
     }
 
