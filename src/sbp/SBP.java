@@ -178,6 +178,9 @@ public class SBP {
     }
 
 
+    public static double calculateNetworkError(SBPImpl sbpImpl, List<TrainingTuple> trainingTuples ){
+        return calculateNetworkError(sbpImpl,trainingTuples,Double.MAX_VALUE);
+    }
 
     public static double calculateNetworkError(SBPImpl sbpImpl, List<TrainingTuple> trainingTuples, double previousNetworkError){
 //        System.out.println("Number training tuples: " + trainingTuples.size());
@@ -189,10 +192,9 @@ public class SBP {
             List<Double> actOutput = sbpImpl.feedForward(TT.getInputs());
 
             double vectorDistance = 0;
-            for (int outputs = 0; outputs < expectOutputs.size(); outputs++) {
+            for (int outputs = 0; outputs < expectOutputs.size(); outputs++)
                 vectorDistance += Math.pow(expectOutputs.get(outputs) - actOutput.get(outputs), 2);
 
-            }
             vectorDistance /= 2;
             networkError += vectorDistance;
 

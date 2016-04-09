@@ -36,7 +36,7 @@ public class Phase3ExperimentPanel extends JPanel {
 
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
             // handle the error
         }
     }

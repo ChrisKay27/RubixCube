@@ -9,7 +9,6 @@ import ui.*;
 import util.WTFException;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 
@@ -18,7 +17,7 @@ import java.util.List;
  * Created by Chris on 1/27/2016.
  */
 public class Main {
-    private static NeuralNetPanel nnPanel;
+    private static NeuralNetExperimentPanel nnPanel;
 
     public static void main(String[] args) {
         for (String s : args){
@@ -66,9 +65,13 @@ public class Main {
             unitTest.addActionListener(e -> new UnitTestRubixCubeWindow());
             unitTesting.add(unitTest);
 
-            JMenuItem unitTestNN = new JMenuItem("Unit Test Neural Net",'e');
+            JMenuItem unitTestNN = new JMenuItem("Unit Test Neural Net",'n');
             unitTestNN.addActionListener(e -> new UnitTestSBPWindow());
             unitTesting.add(unitTestNN);
+
+            JMenuItem unitTestGeneticAlg = new JMenuItem("Unit Test Genetic Algorithm",'g');
+            unitTestGeneticAlg.addActionListener(e -> new UnitTestGeneticsWindow());
+            unitTesting.add(unitTestGeneticAlg);
 
             menuBar.add(unitTesting);
 
@@ -77,9 +80,10 @@ public class Main {
 
 
 
-            nnPanel = new NeuralNetPanel();
+            nnPanel = new NeuralNetExperimentPanel();
 
             JTabbedPane tpane = new JTabbedPane();
+            tpane.add("Genetic Xor Solution" , new GeneticXorSolutionPanel());
             tpane.add("Search-NN-Solve Experiment",new SearchToNNToSolveExperimentPanel());
             tpane.add("NN-Variations Experiment",new Phase3ExperimentPanel());
             tpane.add("Neural Net", nnPanel);

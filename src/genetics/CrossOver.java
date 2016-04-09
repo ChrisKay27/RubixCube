@@ -14,7 +14,7 @@ public class CrossOver {
 
     public static List<Genome> forceMating(int numKids, List<Genome> elites){
         if( elites.size() < 2 )
-            throw new WTFException("A sexual production not allowed (elites.size() must be >= 2)");
+            throw new WTFException("Asexual production not allowed (elites.size() must be >= 2)");
 
         List<Genome> kids = new ArrayList<>();
 
@@ -41,10 +41,13 @@ public class CrossOver {
                 }
             }
 
-            Genome nonBinaryGenderIdentifiedChild = new Genome(dadGenes);
+            Genome nonBinaryGenderIdentifingChild = new Genome(dadGenes);
             Genome sister = new Genome(otherDadGenes);
 
-            kids.add(nonBinaryGenderIdentifiedChild);
+            nonBinaryGenderIdentifingChild.setUserData(dad.getUserData());
+            sister.setUserData(dad.getUserData());
+
+            kids.add(nonBinaryGenderIdentifingChild);
             kids.add(sister);
         }
 

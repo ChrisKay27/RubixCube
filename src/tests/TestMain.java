@@ -1,6 +1,7 @@
 package tests;
 
 import experiment.ExperimentResultsWriter;
+import tests.genetics.TestGenetics;
 import tests.searches.TestSearch;
 import training.TrainingDataGenerator.TestTrainingDataGenerator;
 
@@ -29,7 +30,11 @@ public class TestMain {
         success &= tmpSuccess;
 
         tmpSuccess = ExperimentResultsWriter.TestExperimentResultsWriter.test();
-        out.accept("Testing Expreiments Results Writer, results: " + tmpSuccess);
+        out.accept("Testing Experiments Results Writer, results: " + tmpSuccess);
+        success &= tmpSuccess;
+
+        tmpSuccess = TestGenetics.main(out);
+        out.accept("Testing Experiments Results Writer, results: " + tmpSuccess);
         success &= tmpSuccess;
 
         out.accept("\nUnit Test results:" + success);

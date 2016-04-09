@@ -21,7 +21,7 @@ import java.util.Map;
  *  *
  * Created by Chris on 2/9/2016.
  */
-public class NeuralNetPanel extends JPanel {
+public class NeuralNetExperimentPanel extends JPanel {
 
     private final JTextField ErrorRateTextBox;
     private final JTextField BTextBox;
@@ -31,6 +31,7 @@ public class NeuralNetPanel extends JPanel {
     private final JTextField EpochTextBox;
     private final JTextField ATextBox;
     private final JTextField weightDecayTextBox;
+    private NNPanel nnPanel = null;
     private JTextField TTField;
     private JButton FFButton;
     private JLabel OutputLabel;
@@ -41,12 +42,10 @@ public class NeuralNetPanel extends JPanel {
     private int sleepTime = 100;
     private SBPNNExperiment sbpNNExperiment = new SBPNNExperiment(new NNExperimentParams(1.716, 0.667, 0.125, true, 100, 1000, 324 , 1, 7, 0.000001 , 0.01, 5));
 
-    private Runnable updateUIRunnable;
-
     private boolean drawEdges = true;
 
 
-    public NeuralNetPanel() {
+    public NeuralNetExperimentPanel() {
         super(new BorderLayout());
         sbpNNExperiment.init();
 
@@ -167,12 +166,13 @@ public class NeuralNetPanel extends JPanel {
             NNExperimentParams params = new NNExperimentParams(A, B, N, true, epochs, trainingIterationsPerEpoch, inputs, hiddenLayers, outputs, desiredErrorRate, alpha, hNeurons);
             params.setWeightDecay(weightDecay);
             sbpNNExperiment = new SBPNNExperiment(params);
-            sbpNNExperiment.setUpdateListener(sbpState -> updateUIRunnable.run());
+            nnPanel.setNn(sbpNNExperiment.getNeuralNet());
+            sbpNNExperiment.setUpdateListener(sbpState -> { if(updateUI) nnPanel.update(); });
             sbpNNExperiment.init();
 
             boolean updateUITemp = updateUI;
             updateUI = true;
-            updateUIRunnable.run();
+            nnPanel.update();
             updateUI = updateUITemp;
         });
         temp.add(createNNButton);
@@ -184,17 +184,16 @@ public class NeuralNetPanel extends JPanel {
         final JButton loadNNButton = new JButton("Load NN");
         loadNNButton.addActionListener(e -> {
 
-            int returnVal = fc.showOpenDialog(NeuralNetPanel.this);
+            int returnVal = fc.showOpenDialog(NeuralNetExperimentPanel.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
                 sbpNNExperiment.setNeuralNet(NeuralNetIO.loadNN(file));
 
 
-
                 boolean updateUITemp = updateUI;
                 updateUI = true;
-                updateUIRunnable.run();
+                nnPanel.update();
                 updateUI = updateUITemp;
             }
         });
@@ -203,7 +202,7 @@ public class NeuralNetPanel extends JPanel {
         final JButton saveNNButton = new JButton("Save NN");
         saveNNButton.addActionListener(e -> {
 
-            int returnVal = fc.showSaveDialog(NeuralNetPanel.this);
+            int returnVal = fc.showSaveDialog(NeuralNetExperimentPanel.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
@@ -219,90 +218,96 @@ public class NeuralNetPanel extends JPanel {
 
         add(northPanel,BorderLayout.NORTH);
 
+        nnPanel = new NNPanel(sbpNNExperiment.getNeuralNet());
 
-        //Center Panel
-        mxGraph graph = new mxGraph();
-        Object parent = graph.getDefaultParent();
-        List<Object> graphObjects = new ArrayList<>();
+//
+//        //Center Panel
+//        mxGraph graph = new mxGraph();
+//        Object parent = graph.getDefaultParent();
+//        List<Object> graphObjects = new ArrayList<>();
+//
+//
+//        updateUIRunnable = () -> {
+//                //System.out.println("updating graph");
+//                if(!updateUI) return;
+//               // System.out.println("actually updating graph");
+//                final NeuralNet neuralNet = new NeuralNet(sbpNNExperiment.getNeuralNet());
+//                SwingUtilities.invokeLater(()->{
+//                    graph.getModel().beginUpdate();
+//                    try {
+//                        graphObjects.forEach(o->graph.getModel().remove(o));
+//                        graphObjects.clear();
+//
+//                        Map<Neuron, Object> neurGraph = new HashMap<>();
+//
+//                        int i = 0;
+//                        for (Neuron n : neuralNet.getInputNeurons()) {
+//                            Object graphObject = graph.insertVertex(parent, "i" + i++, n, 300, 200 + i * 80, 80, 30);
+//                            graphObjects.add(graphObject);
+//                            neurGraph.put(n, graphObject);
+//                        }
+//                        i = 0;
+//
+//                        final List<List<Neuron>> hiddenLayers = neuralNet.getHiddenLayers();
+//                        int j=0;
+//                        for (List<Neuron> hiddenNeurons : hiddenLayers ) {
+//                            for (Neuron n : hiddenNeurons) {
+//                                Object graphObject = graph.insertVertex(parent, "h" + i++, n, (j * 100) + 600, 200 + i * 80, 80, 30);
+//                                graphObjects.add(graphObject);
+//                                neurGraph.put(n, graphObject);
+//                            }
+//                            j++;
+//                            i=0;
+//                        }
+//
+//                        i = 0;
+//                        for (Neuron n : neuralNet.getOutputNeurons()) {
+//                            Object graphObject = graph.insertVertex(parent, "o" + i++, n, (j * 100) + 900, 200 + i * 80, 80, 30);
+//                            graphObjects.add(graphObject);
+//                            neurGraph.put(n, graphObject);
+//                        }
+//
+//                        Object graphObject = graph.insertVertex(parent, "o" + i++, neuralNet.getBiasNeuron(), 500, 100, 80, 30);
+//                        graphObjects.add(graphObject);
+//                        neurGraph.put(neuralNet.getBiasNeuron(), graphObject);
+//
+//
+//                        if( drawEdges )
+//                            for (Neuron n : neurGraph.keySet()) {
+//                                if (n.getOutputEdges() != null)
+//                                    for (Edge e : n.getOutputEdges()) {
+//                                        graphObject = graph.insertEdge(parent, null, e, neurGraph.get(e.getSource()), neurGraph.get(e.getDest()));
+//                                        graphObjects.add(graphObject);
+//                                    }
+//                            }
+//
+//
+//                        graph.refresh();
+//                        graph.repaint();
+//                        repaint();
+//
+//
+//                    } finally {
+//                        graph.getModel().endUpdate();
+//                    }
+//                });
+//
+//            try {
+//                Thread.sleep(sleepTime);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            //System.out.println("done updating graph");
+//        };
+
+//        updateUIRunnable.run();
+        nnPanel.update();
+        sbpNNExperiment.setUpdateListener(sbpState -> { if( updateUI) nnPanel.update();} );
+
+//        mxGraphComponent graphComponent = new mxGraphComponent(graph);
 
 
-        updateUIRunnable = () -> {
-                //System.out.println("updating graph");
-                if(!updateUI) return;
-               // System.out.println("actually updating graph");
-                final NeuralNet neuralNet = new NeuralNet(sbpNNExperiment.getNeuralNet());
-                SwingUtilities.invokeLater(()->{
-                    graph.getModel().beginUpdate();
-                    try {
-                        graphObjects.forEach(o->graph.getModel().remove(o));
-                        graphObjects.clear();
-
-                        Map<Neuron, Object> neurGraph = new HashMap<>();
-
-                        int i = 0;
-                        for (Neuron n : neuralNet.getInputNeurons()) {
-                            Object graphObject = graph.insertVertex(parent, "i" + i++, n, 300, 200 + i * 80, 80, 30);
-                            graphObjects.add(graphObject);
-                            neurGraph.put(n, graphObject);
-                        }
-                        i = 0;
-
-                        final List<List<Neuron>> hiddenLayers = neuralNet.getHiddenLayers();
-                        int j=0;
-                        for (List<Neuron> hiddenNeurons : hiddenLayers ) {
-                            for (Neuron n : hiddenNeurons) {
-                                Object graphObject = graph.insertVertex(parent, "h" + i++, n, (j * 100) + 600, 200 + i * 80, 80, 30);
-                                graphObjects.add(graphObject);
-                                neurGraph.put(n, graphObject);
-                            }
-                            j++;
-                            i=0;
-                        }
-
-                        i = 0;
-                        for (Neuron n : neuralNet.getOutputNeurons()) {
-                            Object graphObject = graph.insertVertex(parent, "o" + i++, n, (j * 100) + 900, 200 + i * 80, 80, 30);
-                            graphObjects.add(graphObject);
-                            neurGraph.put(n, graphObject);
-                        }
-
-                        Object graphObject = graph.insertVertex(parent, "o" + i++, neuralNet.getBiasNeuron(), 500, 100, 80, 30);
-                        graphObjects.add(graphObject);
-                        neurGraph.put(neuralNet.getBiasNeuron(), graphObject);
-
-
-                        if( drawEdges )
-                            for (Neuron n : neurGraph.keySet()) {
-                                if (n.getOutputEdges() != null)
-                                    for (Edge e : n.getOutputEdges()) {
-                                        graphObject = graph.insertEdge(parent, null, e, neurGraph.get(e.getSource()), neurGraph.get(e.getDest()));
-                                        graphObjects.add(graphObject);
-                                    }
-                            }
-
-
-                        graph.refresh();
-                        graph.repaint();
-                        repaint();
-
-
-                    } finally {
-                        graph.getModel().endUpdate();
-                    }
-                });
-
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //System.out.println("done updating graph");
-        };
-
-        updateUIRunnable.run();
-        sbpNNExperiment.setUpdateListener(sbpState -> updateUIRunnable.run());
-        mxGraphComponent graphComponent = new mxGraphComponent(graph);
-        add(graphComponent,BorderLayout.CENTER);
+        add(nnPanel.getGraphComponent(),BorderLayout.CENTER);
 
 
         initWestPanel();
@@ -320,7 +325,8 @@ public class NeuralNetPanel extends JPanel {
             drawEdges = !drawEdges;
             boolean prevUpdateUI = updateUI;
             updateUI = true;
-            updateUIRunnable.run();
+            if( updateUI )
+                nnPanel.update();
             updateUI = prevUpdateUI;
         });
         westPanel.add(drawEdgesCheckBox);
@@ -364,7 +370,7 @@ public class NeuralNetPanel extends JPanel {
         checkNetworkError.addActionListener(e -> {
 
             fc.setCurrentDirectory(new File("."));
-            int returnVal = fc.showOpenDialog(NeuralNetPanel.this);
+            int returnVal = fc.showOpenDialog(NeuralNetExperimentPanel.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
@@ -399,7 +405,7 @@ public class NeuralNetPanel extends JPanel {
 
 
             fc.setCurrentDirectory(new File("."));
-            int returnVal = fc.showOpenDialog(NeuralNetPanel.this);
+            int returnVal = fc.showOpenDialog(NeuralNetExperimentPanel.this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
 
@@ -417,8 +423,9 @@ public class NeuralNetPanel extends JPanel {
 
 
                 SwingUtilities.invokeLater(()->{
-                    updateUI = true;
-                    updateUIRunnable.run();
+
+
+                    nnPanel.update();
 
                     updateUICheckbox.setSelected(true);
 
@@ -427,7 +434,7 @@ public class NeuralNetPanel extends JPanel {
                     JPanel content = new JPanel();
                     results.setContentPane(content);
                     content.add(new JLabel("Experiment over, Resulting network error: " + error));
-                    results.setLocationRelativeTo(NeuralNetPanel.this);
+                    results.setLocationRelativeTo(NeuralNetExperimentPanel.this);
                     results.setSize(300,200);
                     results.setVisible(true);
                 });
@@ -458,6 +465,7 @@ public class NeuralNetPanel extends JPanel {
                 sleepTimeField.setText("0");
                 sleepTime = 0;
             }
+            nnPanel.setSleepTime(sleepTime);
         };
         sleepTimeField.addActionListener(e -> updateSleepBetweenStatesTime.run());
         sleepTimeField.addFocusListener(new FocusAdapter() {
@@ -471,7 +479,8 @@ public class NeuralNetPanel extends JPanel {
 
         updateUICheckbox.addActionListener(e->{
             updateUI = updateUICheckbox.isSelected();
-            updateUIRunnable.run();
+            if( updateUI )
+                nnPanel.update();
         });
         updateUICheckbox.setSelected(true);
         southPanel.add(updateUICheckbox);

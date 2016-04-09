@@ -44,6 +44,11 @@ public class DoubleGene implements Gene{
     }
 
     @Override
+    public void randomize() {
+        value = -5 + (10*Math.random());
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if( obj == this ) return true;
         if( !(obj instanceof DoubleGene) ) return false;

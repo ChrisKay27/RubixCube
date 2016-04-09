@@ -9,12 +9,13 @@ public class Genome implements Comparable<Genome> {
 
     private List<Gene> genes = new ArrayList<>();
     private double fitness;
+    private Object userData;
 
     public Genome() {
     }
 
     public Genome(List<Gene> genes) {
-        genes.forEach(gene -> genes.add(gene.getCopy()));
+        genes.forEach(gene -> this.genes.add(gene.getCopy()));
     }
 
     public List<Gene> getGenes() {
@@ -42,7 +43,9 @@ public class Genome implements Comparable<Genome> {
     }
 
     public Genome copy(){
-        return new Genome(genes);
+        Genome genome = new Genome(genes);
+        genome.setUserData(userData);
+        return genome;
     }
 
     public void mutate(double percentOfGenome) {
@@ -70,12 +73,22 @@ public class Genome implements Comparable<Genome> {
 
     @Override
     public int compareTo(Genome o) {
-        if( fitness > o.fitness ) return 1;
-        if( fitness < o.fitness ) return -1;
+        if( fitness > o.fitness ) return -1;
+        if( fitness < o.fitness ) return 1;
         return 0;
     }
 
     public Genome getRandomCopy() {
-        return copy();
+        Genome copy = copy();
+        copy.genes.forEach(gene -> gene.randomize());
+        return copy;
+    }
+
+    public Object getUserData() {
+        return userData;
+    }
+
+    public void setUserData(Object userData) {
+        this.userData = userData;
     }
 }

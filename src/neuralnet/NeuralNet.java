@@ -61,11 +61,8 @@ public class NeuralNet implements SBPImpl, Serializable {
         }
 
         inputNeurons.clear();
-
         hiddenLayers.clear();
-
         outputNeurons.clear();
-
 
 
         for (int i = 0; i < params.getInputNeurons(); i++)

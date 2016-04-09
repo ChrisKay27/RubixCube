@@ -66,4 +66,8 @@ public class TextBox extends JPanel {
     public int getInt(){
         return Integer.parseInt(textField.getText());
     }
+
+    public double getDouble() {
+        return Double.parseDouble(getText());
+    }
 }

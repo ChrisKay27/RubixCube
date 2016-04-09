@@ -14,6 +14,7 @@ public class GAParams {
     private int popSize;
     private Function<Genome,Double> fitTest;
     private Genome sampleGenome;
+    private double acceptableFitness;
 
     public GAParams() {
     }
@@ -72,5 +73,13 @@ public class GAParams {
 
     public void setSampleGenome(Genome sampleGenome) {
         this.sampleGenome = sampleGenome;
+    }
+
+    public double getAcceptableFitness() {
+        return acceptableFitness;
+    }
+
+    public void setAcceptableFitness(double acceptableFitness) {
+        this.acceptableFitness = acceptableFitness;
     }
 }

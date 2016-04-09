@@ -12,4 +12,7 @@ public interface Gene {
     void mutate();
 
     Gene getCopy();
+
+    void randomize();
+
 }
