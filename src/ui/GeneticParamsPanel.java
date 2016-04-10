@@ -39,6 +39,7 @@ public class GeneticParamsPanel extends JPanel {
         content.add(popSizeTB);
         content.add(acceptableFitnessTB);
         content.add(errorLabel);
+        add(content);
     }
 
 

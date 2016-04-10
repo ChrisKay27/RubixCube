@@ -4,6 +4,7 @@ import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
 import com.sun.corba.se.spi.orbutil.threadpool.ThreadPool;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import cube.RubixCube;
+import javafx.stage.FileChooser;
 import neuralnet.NNTrainingDataLoader;
 import neuralnet.NeuralNet;
 import neuralnet.NeuralNetParams;
@@ -15,9 +16,7 @@ import training.TrainingDataGenerator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +25,7 @@ import java.util.List;
  */
 public class GeneticNNPanel extends JPanel {
 
+    private JButton startButton;
     private Connection conn;
     static {
         try {
@@ -33,6 +33,7 @@ public class GeneticNNPanel extends JPanel {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception ex) {
             // handle the error
+            ex.printStackTrace();
         }
     }
 
@@ -42,6 +43,28 @@ public class GeneticNNPanel extends JPanel {
     private int runNumber = 0;
 
     public GeneticNNPanel() {
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/ai?" +
+                    "user=RubixCube&password=rubixcube");
+        } catch (SQLException ex) {
+            // handle any errors
+            ex.printStackTrace();
+        }
+
+        if( conn != null ){
+            try {
+                Statement statement = conn.createStatement();
+
+                ResultSet resultSet = statement.executeQuery("SELECT runNumber FROM garesults ORDER BY runNumber DESC LIMIT 1;");
+                resultSet.first();
+                runNumber = resultSet.getInt(1);
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+
+
         GeneticNNSolution geneticNNSolution = new GeneticNNSolution();
 
         NeuralNetParams params = new NeuralNetParams();
@@ -71,77 +94,93 @@ public class GeneticNNPanel extends JPanel {
         trainingTuplesLoadedLabel.setText("No training tuples loaded.");
         centerPanel.add(trainingTuplesLoadedLabel);
 
+
+        JButton loadTTButton = new JButton("Load Training Data");
+        loadTTButton.addActionListener(e->{
+            JFileChooser fc = new JFileChooser(".");
+            int success = fc.showOpenDialog(GeneticNNPanel.this);
+            if( success == JFileChooser.APPROVE_OPTION ){
+                trainingTuples = NNTrainingDataLoader.loadTrainingTuples(fc.getSelectedFile());
+                trainingTuplesLoadedLabel.setText(trainingTuples.size() + " training tuples loaded.");
+                startButton.setEnabled(true);
+            }
+        });
+        centerPanel.add(loadTTButton);
+
         JLabel infoLabel = new JLabel("Not Started");
 
 
-        JButton startButton = new JButton("Start");
+        startButton = new JButton("Start");
 
         ThreadPool tp = new ThreadPoolImpl(1,2,20000,"DatabaseUpdaterPool");
 
         startButton.addActionListener(e -> {
+            new Thread(()-> {
             gpp.getGaParamsVariations().forEach(gaParams -> {
-
+                int runNumber = this.runNumber++;
                 int popSize = gaParams.getPopSize();
                 int generations = gaParams.getGenerations();
                 double percElites = gaParams.getPercElites();
                 double percFreaks = gaParams.getPercMutations();
                 double percCrossOvers = gaParams.getPercCross();
-                new Thread(()-> {
-
-                    NeuralNet nn = geneticNNSolution.run(gaParams,trainingTuples,gr->{
-                        infoLabel.setText(String.format("Generation: %d  Worst Fitness: %.3f Avg Fitness: %.3f Best Fitness %.3f", gr.generation,gr.worstFitness,gr.avgFitness,gr.bestFitness));
 
 
-                        //Used to load results into a database if the connection was successful (which it wont be on your machine)
-                        if( conn != null ) {
+                NeuralNet nn = geneticNNSolution.run(gaParams,trainingTuples,gr->{
+                    infoLabel.setText(String.format("Generation: %d  Worst Fitness: %.3f Avg Fitness: %.3f Best Fitness %.3f", gr.generation,gr.worstFitness,gr.avgFitness,gr.bestFitness));
 
-                            tp.getAnyWorkQueue().addWork(new Work() {
-                                @Override
-                                public void doWork() {
-                                    String query = "INSERT INTO GAResults(runNumber, popSize, generations, percElites, percMutations, percCrossOver, genNumber, lowestFitness, averageFitness, bestFitness) VALUES (?,?,?,?,?,?,?,?,?,?);";
-                                    try {
-                                        PreparedStatement statement = conn.prepareStatement(query);
 
-                                        statement.setInt(1, runNumber);
-                                        statement.setInt(2, popSize);
-                                        statement.setInt(3, generations);
-                                        statement.setDouble(4, percElites);
-                                        statement.setDouble(5, percFreaks);
-                                        statement.setDouble(6, percCrossOvers);
+                    //Used to load results into a database if the connection was successful (which it wont be on your machine)
+                    if( conn != null ) {
 
-                                        statement.executeUpdate();
-                                    } catch (SQLException e1) {
-                                        e1.printStackTrace();
-                                    }
+                        tp.getAnyWorkQueue().addWork(new Work() {
+                            @Override
+                            public void doWork() {
+                                String query = "INSERT INTO garesults(runNumber, popSize, generations, percElites, percMutations," +
+                                        " percCrossOver, genNumber, lowestFitness, averageFitness, bestFitness) VALUES (?,?,?,?,?,?,?,?,?,?);";
+                                try {
+                                    PreparedStatement statement = conn.prepareStatement(query);
+
+                                    statement.setInt(1, runNumber);
+                                    statement.setInt(2, popSize);
+                                    statement.setInt(3, generations);
+                                    statement.setDouble(4, percElites);
+                                    statement.setDouble(5, percFreaks);
+                                    statement.setDouble(6, percCrossOvers);
+                                    statement.setInt(7, gr.generation);
+                                    statement.setDouble(8, gr.worstFitness);
+                                    statement.setDouble(9, gr.avgFitness);
+                                    statement.setDouble(10, gr.bestFitness);
+
+                                    statement.executeUpdate();
+                                } catch (SQLException e1) {
+                                    e1.printStackTrace();
                                 }
+                            }
 
-                                @Override
-                                public void setEnqueueTime(long timeInMillis) {
-                                }
+                            @Override
+                            public void setEnqueueTime(long timeInMillis) {
+                            }
 
-                                @Override
-                                public long getEnqueueTime() {
-                                    return 0;
-                                }
+                            @Override
+                            public long getEnqueueTime() {
+                                return 0;
+                            }
 
-                                @Override
-                                public String getName() {
-                                    return null;
-                                }
-                            });
-                        }
+                            @Override
+                            public String getName() {
+                                return null;
+                            }
+                        });
+                    }
 
-                    });
+                });
 
-//                    nnPanel.setNn(nn);
-//                    nnPanel.update();
-
-                    runNumber++;
-
-                }).start();
+//               nnPanel.setNn(nn);
+//               nnPanel.update();
 
 
             });
+            }).start();
         });
         centerPanel.add(startButton);
         centerPanel.add(infoLabel);
@@ -158,6 +197,9 @@ public class GeneticNNPanel extends JPanel {
     public void setTrainingTuples(List<TrainingTuple> trainingTuples) {
         this.trainingTuples = trainingTuples;
         trainingTuplesLoadedLabel.setText(trainingTuples.size() + " training tuples loaded.");
+        if( trainingTuples.size() > 0 ){
+            startButton.setEnabled(true);
+        }
 
     }
 }

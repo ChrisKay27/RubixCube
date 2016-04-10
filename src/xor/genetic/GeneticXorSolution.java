@@ -46,7 +46,7 @@ public class GeneticXorSolution {
             return fitness;
         });
 
-        GeneticAlgorithm ga = new GeneticAlgorithm(gaParams, (gen,fit)->{});
+        GeneticAlgorithm ga = new GeneticAlgorithm(gaParams, (gr)->{});
 
         Genome elitest = ga.run();
         NeuralNet nn = NNToGenomeConverter.getNeuralNet(elitest);

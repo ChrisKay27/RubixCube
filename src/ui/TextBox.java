@@ -83,7 +83,7 @@ public class TextBox extends JPanel {
         double max = Double.parseDouble(minMax[1]);
         double inc = Double.parseDouble(split[1]);
 
-        for (double i = min; i < max; i+=inc)
+        for (double i = min; i <= max; i+=inc)
             values.add(i);
 
         return values;
@@ -99,7 +99,7 @@ public class TextBox extends JPanel {
         int max = Integer.parseInt(minMax[1]);
         int inc = Integer.parseInt(split[1]);
 
-        for (int i = min; i < max; i+=inc)
+        for (int i = min; i <= max; i+=inc)
             values.add(i);
 
         return values;
