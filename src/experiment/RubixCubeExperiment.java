@@ -100,9 +100,6 @@ public class RubixCubeExperiment {
         Tuple t = new Tuple(nextState,null);
         resultTuples.add(t);
 
-
-
-
         return resultTuples;
     }
 

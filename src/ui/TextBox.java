@@ -2,6 +2,8 @@ package ui;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by chris_000 on 3/15/2016.
@@ -70,4 +72,37 @@ public class TextBox extends JPanel {
     public double getDouble() {
         return Double.parseDouble(getText());
     }
+
+    public List<Double> getDoubles() {
+        String[] split = getText().split(":");
+        String[] minMax = split[0].split("-");
+
+        List<Double> values = new ArrayList<>();
+
+        double min = Double.parseDouble(minMax[0]);
+        double max = Double.parseDouble(minMax[1]);
+        double inc = Double.parseDouble(split[1]);
+
+        for (double i = min; i < max; i+=inc)
+            values.add(i);
+
+        return values;
+    }
+
+    public List<Integer> getInts() {
+        String[] split = getText().split(":");
+        String[] minMax = split[0].split("-");
+
+        List<Integer> values = new ArrayList<>();
+
+        int min = Integer.parseInt(minMax[0]);
+        int max = Integer.parseInt(minMax[1]);
+        int inc = Integer.parseInt(split[1]);
+
+        for (int i = min; i < max; i+=inc)
+            values.add(i);
+
+        return values;
+    }
+
 }

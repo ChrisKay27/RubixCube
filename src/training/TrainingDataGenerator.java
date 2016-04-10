@@ -175,7 +175,7 @@ public class TrainingDataGenerator {
     /**
      *
      */
-    private static String getColOrRowEncoding(String colOrRowStr, int cubeSize) {
+    public static String getColOrRowEncoding(String colOrRowStr, int cubeSize) {
 
         int colOrRow = Integer.parseInt(colOrRowStr);
 
@@ -206,7 +206,7 @@ public class TrainingDataGenerator {
      * cw = 1,
      * ccw = -1,
      */
-    private static String getDirEncoding(String s) {
+    public static String getDirEncoding(String s) {
         switch (s){
             case "cw": return "1,";
             case "ccw": return "-1,";
@@ -232,7 +232,7 @@ public class TrainingDataGenerator {
      * NS = -1,1,-1,
      * EW = 1,-1,-1,
      */
-    private static String getSliceEncoding(String s) {
+    public static String getSliceEncoding(String s) {
         switch (s){
             case "Row": return "-1,-1,1,";
             case "NS": return  "-1,1,-1,";
@@ -276,88 +276,6 @@ public class TrainingDataGenerator {
 
 
 
-    public static class TestTrainingDataGenerator{
 
-        public static boolean test(){
-
-            boolean pass;
-            pass = testGetColorEncoding();
-            pass &= testGetSliceEncoding();
-            return pass;
-        }
-
-
-
-
-        public static boolean testGetColorEncoding(){
-
-            boolean pass;
-
-            try {
-                pass = getColorEncoding('R').equals("-1,-1,-1,-1,-1,1,");
-                pass &= getColorEncoding('O').equals("-1,-1,-1,-1,1,-1,");
-                pass &= getColorEncoding('Y').equals("-1,-1,-1,1,-1,-1,");
-                pass &= getColorEncoding('G').equals("-1,-1,1,-1,-1,-1,");
-                pass &= getColorEncoding('B').equals("-1,1,-1,-1,-1,-1,");
-                pass &= getColorEncoding('W').equals("1,-1,-1,-1,-1,-1,");
-            }
-            catch( WTFException wtf){
-                wtf.printStackTrace();
-                pass = false;
-            }
-
-
-            String abcs = "abcdefghijklmnopqrstuvwxyzACDEFHIJKLMNPQSTUVXZ0123456789!@#$$%^&&*(),.;'[]\\/<>?:\"{}|+_-=";
-
-            for (int i = 0; i < abcs.length(); i++) {
-                try {
-                    //This should throw an exception so it never gets to pass = false;
-                    getColorEncoding(abcs.charAt(i));
-                    pass = false;
-                }
-                catch( WTFException wtf){
-                    //Should get here EVERY time in this loop
-
-                    //wtf.printStackTrace();
-                }
-            }
-
-            return pass;
-        }
-
-
-
-        public static boolean testGetSliceEncoding() {
-
-            boolean pass;
-
-            try {
-                pass = getSliceEncoding("Row").equals("-1,-1,1,");
-                pass &= getSliceEncoding("NS").equals("-1,1,-1,");
-                pass &= getSliceEncoding("EW").equals("1,-1,-1,");
-            }
-            catch( WTFException wtf){
-                wtf.printStackTrace();
-                pass = false;
-            }
-
-            String abcs = "abcdefghijklmnopqrstuvwxyzACDEFHIJKLMNPQSTUVXZ0123456789!@#$$%^&&*(),.;'[]\\/<>?:\"{}|+_-=";
-
-            for (int i = 0; i < abcs.length(); i++) {
-                try {
-                    //This should throw an exception so it never gets to pass = false;
-                    getSliceEncoding(abcs.charAt(i)+"");
-                    pass = false;
-                }
-                catch( WTFException wtf){
-                    //wtf.printStackTrace();
-                }
-            }
-
-            return pass;
-        }
-
-
-    }
 
 }

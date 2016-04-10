@@ -3,7 +3,8 @@ package tests;
 import experiment.ExperimentResultsWriter;
 import tests.genetics.TestGenetics;
 import tests.searches.TestSearch;
-import training.TrainingDataGenerator.TestTrainingDataGenerator;
+import tests.searches.TestTrainingDataGenerator;
+
 
 import java.util.function.Consumer;
 

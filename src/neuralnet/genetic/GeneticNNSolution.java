@@ -1,36 +1,44 @@
-package xor.genetic;
+package neuralnet.genetic;
 
 import genetics.GAParams;
 import genetics.GeneticAlgorithm;
+import genetics.GeneticAlgorithm.GenerationResults;
 import genetics.Genome;
-import neuralnet.*;
+import neuralnet.NNToGenomeConverter;
+import neuralnet.NeuralNet;
+import neuralnet.NeuralNetParams;
+import neuralnet.TrainingTuple;
 import sbp.SBP;
 import xor.Xor;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
  * Created by Chris on 4/5/2016.
  */
-public class GeneticXorSolution {
+public class GeneticNNSolution {
 
     private double A = 1.716;
     private double B = 0.667;
     private Function<Double,Double> sigmoid = net -> A*Math.tanh(B*net);
 
-    public GeneticXorSolution(){
+    public GeneticNNSolution(){
 
     }
 
-    public NeuralNet run(GAParams gaParams){
+    int count=0;
+
+    public NeuralNet run(GAParams gaParams, List<TrainingTuple> trainingTuples, Consumer<GenerationResults> listener){
 
         NeuralNetParams NNparams = new NeuralNetParams();
         NNparams.setBiasNeuron(true);
-        NNparams.setInputNeurons(2);
-        NNparams.setHiddenNeuronsInLayer(2);
+        NNparams.setInputNeurons(324);
+        NNparams.setHiddenNeuronsInLayer(36);
         NNparams.setNumberOfHiddenLayers(1);
-        NNparams.setOutputNeurons(1);
+        NNparams.setOutputNeurons(7);
         NNparams.setSigmoid(sigmoid);
 
 
@@ -38,20 +46,24 @@ public class GeneticXorSolution {
         neuralNet.init();
         gaParams.setSampleGenome(NNToGenomeConverter.getGenome(neuralNet));
 
-        List<TrainingTuple> trainingTuples = Xor.getTrainingTuples();
-        gaParams.setFitTest((genome,gen) -> {
+
+        gaParams.setFitTest((genome,generation)-> {
             NeuralNet nn = NNToGenomeConverter.getNeuralNet(genome);
             double fitness = -SBP.calculateNetworkError(nn,trainingTuples);
-            System.out.println("fitness = " + fitness);
+            count++;
+
+//            System.out.println("fitness = " + fitness);
             return fitness;
         });
 
-        GeneticAlgorithm ga = new GeneticAlgorithm(gaParams, (gen,fit)->{});
+        GeneticAlgorithm ga = new GeneticAlgorithm(gaParams,listener);
 
         Genome elitest = ga.run();
         NeuralNet nn = NNToGenomeConverter.getNeuralNet(elitest);
-        double fitness = -SBP.calculateNetworkError(nn,trainingTuples);
-        System.out.println(fitness);
+
+        nn.setNetworkError(SBP.calculateNetworkError(nn,trainingTuples));
+        double fitness = -nn.getNetworkError();
+        System.out.println(count + " fitness: "+ fitness);
         return nn;
     }
 
@@ -59,7 +71,7 @@ public class GeneticXorSolution {
 
 
     public static void main(String[] args) {
-        new GeneticXorSolution();
+        new GeneticNNSolution().run(null,null,null);
     }
 
 

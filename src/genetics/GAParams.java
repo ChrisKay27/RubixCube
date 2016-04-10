@@ -1,7 +1,6 @@
 package genetics;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Created by chris_000 on 3/26/2016.
@@ -12,7 +11,7 @@ public class GAParams {
     private double percCross;
     private int generations;
     private int popSize;
-    private Function<Genome,Double> fitTest;
+    private BiFunction<Genome, Integer, Double> fitTest;
     private Genome sampleGenome;
     private double acceptableFitness;
 
@@ -59,11 +58,11 @@ public class GAParams {
         this.popSize = popSize;
     }
 
-    public Function<Genome, Double> getFitTest() {
+    public BiFunction<Genome, Integer, Double> getFitTest() {
         return fitTest;
     }
 
-    public void setFitTest(Function<Genome, Double> fitTest) {
+    public void setFitTest(BiFunction<Genome,Integer , Double> fitTest) {
         this.fitTest = fitTest;
     }
 

@@ -83,6 +83,7 @@ public class Main {
             nnPanel = new NeuralNetExperimentPanel();
 
             JTabbedPane tpane = new JTabbedPane();
+            tpane.add("Genetic NN Solution" , new GeneticNNSolutionPanel());
             tpane.add("Genetic Xor Solution" , new GeneticXorSolutionPanel());
             tpane.add("Search-NN-Solve Experiment",new SearchToNNToSolveExperimentPanel());
             tpane.add("NN-Variations Experiment",new Phase3ExperimentPanel());

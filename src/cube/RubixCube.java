@@ -17,6 +17,7 @@ import static cube.RubixCube.Faces.*;
 public class RubixCube implements Searchable {
 
 
+
 	public static class Color{
 		public static final byte ORANGE = 0;
 		public static final byte GREEN = 1;
@@ -906,5 +907,11 @@ public class RubixCube implements Searchable {
 				System.out.print(face[i][j] + " ");
 			System.out.println();
 		}
+	}
+
+
+	public RubixCube getRandomChild() {
+		List<EdgeChildPair> children = getChildren();
+		return (RubixCube) children.get((int)(Math.random()*children.size())).child;
 	}
 }
