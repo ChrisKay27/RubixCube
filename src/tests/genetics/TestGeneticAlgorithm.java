@@ -26,9 +26,6 @@ public class TestGeneticAlgorithm {
         passed &= TestMutator.testMutator();
         passed &= TestCrossOver.testCrossOver();
 
-
-
-
         return passed;
     }
 

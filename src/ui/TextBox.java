@@ -79,6 +79,11 @@ public class TextBox extends JPanel {
 
         List<Double> values = new ArrayList<>();
 
+        if( !getText().contains(":")){
+            values.add(Double.parseDouble(getText()));
+            return values;
+        }
+
         double min = Double.parseDouble(minMax[0]);
         double max = Double.parseDouble(minMax[1]);
         double inc = Double.parseDouble(split[1]);
@@ -90,10 +95,16 @@ public class TextBox extends JPanel {
     }
 
     public List<Integer> getInts() {
+
         String[] split = getText().split(":");
         String[] minMax = split[0].split("-");
 
         List<Integer> values = new ArrayList<>();
+
+        if( !getText().contains(":")){
+            values.add(Integer.parseInt(getText()));
+            return values;
+        }
 
         int min = Integer.parseInt(minMax[0]);
         int max = Integer.parseInt(minMax[1]);

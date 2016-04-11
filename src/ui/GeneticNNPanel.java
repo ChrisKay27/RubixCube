@@ -4,6 +4,7 @@ import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
 import com.sun.corba.se.spi.orbutil.threadpool.ThreadPool;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import cube.RubixCube;
+import genetics.GAParams;
 import javafx.stage.FileChooser;
 import neuralnet.NNTrainingDataLoader;
 import neuralnet.NeuralNet;
@@ -41,6 +42,7 @@ public class GeneticNNPanel extends JPanel {
     private List<TrainingTuple> trainingTuples;
     private final JLabel trainingTuplesLoadedLabel = new JLabel();
     private int runNumber = 0;
+    private int remainingRuns = 0;
 
     public GeneticNNPanel() {
         try {
@@ -81,7 +83,7 @@ public class GeneticNNPanel extends JPanel {
 
 
 //        JPanel northPanel = new JPanel();
-        GeneticParamsPanel gpp = new GeneticParamsPanel();
+        GeneticParamsPanel gpp = new GeneticParamsPanel(false);
 
 
 
@@ -111,78 +113,97 @@ public class GeneticNNPanel extends JPanel {
 
 
         startButton = new JButton("Start");
-
+        startButton.setEnabled(false);
         ThreadPool tp = new ThreadPoolImpl(1,2,20000,"DatabaseUpdaterPool");
 
+        JLabel numberOfRunsLabel = new JLabel("");
+
+
         startButton.addActionListener(e -> {
+            startButton.setEnabled(false);
             new Thread(()-> {
-            gpp.getGaParamsVariations().forEach(gaParams -> {
-                int runNumber = this.runNumber++;
-                int popSize = gaParams.getPopSize();
-                int generations = gaParams.getGenerations();
-                double percElites = gaParams.getPercElites();
-                double percFreaks = gaParams.getPercMutations();
-                double percCrossOvers = gaParams.getPercCross();
+                List<GAParams> gaParamsVariations = gpp.getGaParamsVariations();
+                remainingRuns = gaParamsVariations.size();
+
+                gaParamsVariations.forEach(gaParams -> {
+                    try {
+                        numberOfRunsLabel.setText("Running " + remainingRuns-- + " more runs.");
+
+                        int runNumber = this.runNumber++;
+                        int popSize = gaParams.getPopSize();
+                        int generations = gaParams.getGenerations();
+                        double percElites = gaParams.getPercElites();
+                        double percFreaks = gaParams.getPercMutations();
+                        double percCrossOvers = gaParams.getPercCross();
 
 
-                NeuralNet nn = geneticNNSolution.run(gaParams,trainingTuples,gr->{
-                    infoLabel.setText(String.format("Generation: %d  Worst Fitness: %.3f Avg Fitness: %.3f Best Fitness %.3f", gr.generation,gr.worstFitness,gr.avgFitness,gr.bestFitness));
+                        NeuralNet nn = geneticNNSolution.run(gaParams, trainingTuples, gr -> {
+                            infoLabel.setText(String.format("Generation: %d  Worst Fitness: %.3f Avg Fitness: %.3f Best Fitness %.3f", gr.generation, gr.worstFitness, gr.avgFitness, gr.bestFitness));
 
 
-                    //Used to load results into a database if the connection was successful (which it wont be on your machine)
-                    if( conn != null ) {
+                            //Used to load results into a database if the connection was successful (which it wont be on your machine)
+                            if (conn != null) {
 
-                        tp.getAnyWorkQueue().addWork(new Work() {
-                            @Override
-                            public void doWork() {
-                                String query = "INSERT INTO garesults(runNumber, popSize, generations, percElites, percMutations," +
-                                        " percCrossOver, genNumber, lowestFitness, averageFitness, bestFitness) VALUES (?,?,?,?,?,?,?,?,?,?);";
-                                try {
-                                    PreparedStatement statement = conn.prepareStatement(query);
+                                tp.getAnyWorkQueue().addWork(new Work() {
+                                    @Override
+                                    public void doWork() {
+                                        String query = "INSERT INTO garesults(runNumber, popSize, generations, percElites, percMutations," +
+                                                " percCrossOver, genNumber, lowestFitness, averageFitness, bestFitness) VALUES (?,?,?,?,?,?,?,?,?,?);";
+                                        try {
+                                            PreparedStatement statement = conn.prepareStatement(query);
 
-                                    statement.setInt(1, runNumber);
-                                    statement.setInt(2, popSize);
-                                    statement.setInt(3, generations);
-                                    statement.setDouble(4, percElites);
-                                    statement.setDouble(5, percFreaks);
-                                    statement.setDouble(6, percCrossOvers);
-                                    statement.setInt(7, gr.generation);
-                                    statement.setDouble(8, gr.worstFitness);
-                                    statement.setDouble(9, gr.avgFitness);
-                                    statement.setDouble(10, gr.bestFitness);
+                                            statement.setInt(1, runNumber);
+                                            statement.setInt(2, popSize);
+                                            statement.setInt(3, generations);
+                                            statement.setDouble(4, percElites);
+                                            statement.setDouble(5, percFreaks);
+                                            statement.setDouble(6, percCrossOvers);
+                                            statement.setInt(7, gr.generation);
+                                            statement.setDouble(8, gr.worstFitness);
+                                            statement.setDouble(9, gr.avgFitness);
+                                            statement.setDouble(10, gr.bestFitness);
 
-                                    statement.executeUpdate();
-                                } catch (SQLException e1) {
-                                    e1.printStackTrace();
-                                }
+                                            statement.executeUpdate();
+                                        } catch (SQLException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void setEnqueueTime(long timeInMillis) {
+                                    }
+
+                                    @Override
+                                    public long getEnqueueTime() {
+                                        return 0;
+                                    }
+
+                                    @Override
+                                    public String getName() {
+                                        return null;
+                                    }
+                                });
                             }
 
-                            @Override
-                            public void setEnqueueTime(long timeInMillis) {
-                            }
-
-                            @Override
-                            public long getEnqueueTime() {
-                                return 0;
-                            }
-
-                            @Override
-                            public String getName() {
-                                return null;
-                            }
                         });
                     }
-
-                });
-
+                    catch(Exception ex){
+                        ex.printStackTrace();
+                    }
 //               nnPanel.setNn(nn);
 //               nnPanel.update();
 
 
-            });
+                });
+                startButton.setEnabled(true);
             }).start();
         });
         centerPanel.add(startButton);
+
+
+
+
+        centerPanel.add(numberOfRunsLabel);
         centerPanel.add(infoLabel);
 
 

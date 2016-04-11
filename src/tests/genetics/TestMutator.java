@@ -25,7 +25,6 @@ public class TestMutator {
     public static boolean testGetMutations() {
         boolean passed = true;
 
-
         List<Genome> elites = TestGeneticAlgorithm.getGenomes(10);
 
         int failures = 0;

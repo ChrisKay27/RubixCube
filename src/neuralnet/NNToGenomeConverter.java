@@ -30,11 +30,20 @@ public class NNToGenomeConverter {
 
     public static NeuralNet getNeuralNet(Genome g) {
 
-        NeuralNetParams params =(NeuralNetParams) g.getUserData();
+        NeuralNetParams params = (NeuralNetParams) g.getUserData();
 
         NeuralNet nn = new NeuralNet(params);
         nn.init();
         
+        List<Gene> genes = new LinkedList<>(g.getGenes());
+        nn.getHiddenLayers().forEach(hiddenLayer -> hiddenLayer.forEach(neuron -> neuron.getInputEdges().forEach(edge -> edge.setWeight(((DoubleGene)genes.remove(0)).getValue()))));
+        nn.getOutputNeurons().forEach(neuron -> neuron.getInputEdges().forEach(edge -> edge.setWeight(((DoubleGene)genes.remove(0)).getValue())));
+
+        return nn;
+    }
+
+    public static NeuralNet getNeuralNet(Genome g, NeuralNet nn) {
+
         List<Gene> genes = new LinkedList<>(g.getGenes());
         nn.getHiddenLayers().forEach(hiddenLayer -> hiddenLayer.forEach(neuron -> neuron.getInputEdges().forEach(edge -> edge.setWeight(((DoubleGene)genes.remove(0)).getValue()))));
         nn.getOutputNeurons().forEach(neuron -> neuron.getInputEdges().forEach(edge -> edge.setWeight(((DoubleGene)genes.remove(0)).getValue())));

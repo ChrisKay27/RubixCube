@@ -21,7 +21,7 @@ public class GeneticParamsFrame extends JFrame {
         this.paramsConsumer = paramsConsumer;
 
         JPanel content = new JPanel(new BorderLayout());
-        GeneticParamsPanel gpp = new GeneticParamsPanel();
+        GeneticParamsPanel gpp = new GeneticParamsPanel(true);
 
         JButton doneButton = new JButton("Done");
         doneButton.addActionListener(e -> {

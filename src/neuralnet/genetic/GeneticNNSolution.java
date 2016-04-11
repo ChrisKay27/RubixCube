@@ -29,7 +29,7 @@ public class GeneticNNSolution {
 
     }
 
-    int count=0;
+
 
     public NeuralNet run(GAParams gaParams, List<TrainingTuple> trainingTuples, Consumer<GenerationResults> listener){
 
@@ -48,12 +48,10 @@ public class GeneticNNSolution {
 
 
         gaParams.setFitTest((genome,generation)-> {
-            NeuralNet nn = NNToGenomeConverter.getNeuralNet(genome);
-            double fitness = -SBP.calculateNetworkError(nn,trainingTuples);
-            count++;
+            NeuralNet nn = NNToGenomeConverter.getNeuralNet(genome, neuralNet);
 
 //            System.out.println("fitness = " + fitness);
-            return fitness;
+            return -SBP.calculateNetworkError(nn,trainingTuples);
         });
 
         GeneticAlgorithm ga = new GeneticAlgorithm(gaParams,listener);
@@ -63,7 +61,7 @@ public class GeneticNNSolution {
 
         nn.setNetworkError(SBP.calculateNetworkError(nn,trainingTuples));
         double fitness = -nn.getNetworkError();
-        System.out.println(count + " fitness: "+ fitness);
+        System.out.println("Best Fitness: "+ fitness);
         return nn;
     }
 
